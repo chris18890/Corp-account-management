@@ -181,7 +181,7 @@ Create-ADGroup -GroupName "UG_Level_1_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGro
 Create-ADGroup -GroupName "UG_Level_2_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Level 2 admins - junior server, includes all level 3 admins"
 Create-ADGroup -GroupName "UG_Level_3_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Level 3 admins - senior server"
 Create-ADGroup -GroupName "RG_Password_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members can reset passwords of users in the $StaffGroup OU"
-Create-ADGroup -GroupName "RG_Server_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members are added to Local admin on all computers in $ParentOU & Sub OUs via GPO, are indirect members of the erver Operators BuiltIn group, & are members of DHCP Administrators"
+Create-ADGroup -GroupName "RG_Server_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members are added to Local admin on all computers in $ParentOU & Sub OUs via GPO, are indirect members of the Server Operators BuiltIn group, & are members of DHCP Administrators"
 Create-ADGroup -GroupName "RG_WDS_Deploy_Clients" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members can use WDS to deploy images in the Clients folder"
 Create-ADGroup -GroupName "RG_WDS_Deploy_Servers" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members can use WDS to deploy images in the Servers folder"
 Add-GroupMember -group $StaffGroup -Member $ITGroup
