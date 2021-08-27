@@ -112,14 +112,13 @@ function Validate-Password {
 #====================================================================
 function Create-Mailbox-OnPrem {
     param(
-    [string]$UserName,[string]$realname
+    [string]$UserName
     )
     #================================================================
     # Purpose:          To create an Exchange 2016 Mailbox for a user account
     # Assumptions:      Parameters have been set correctly
     # Effects:          Mailbox should be created for user
     # Inputs:           $UserName - SAM account name of user
-    #                   $realname - Real Name to set as Primary SMTP address, read from CSV
     # Calls:            Write-Log function
     # Returns:          $EnabledMailbox
     # Notes:            Uses Remote Powershell & Exchange Management shell snapin
@@ -138,15 +137,9 @@ function Create-Mailbox-OnPrem {
         Write-Log "Creating mailbox"
         $alias = $UserName.ToUpper()     #Alias = uppercase UserName
         try {
-            if ($realname) {
-                $action = "Enable-Mailbox -Identity $UserName -PrimarySmtpAddress $realname@$EmailSuffix -alias $alias -DomainController $DCHostName"
-                Write-log $action
-                $NewMailbox = Enable-Mailbox -Identity $UserName -PrimarySmtpAddress "$realname@$EmailSuffix" -alias $alias -DomainController $DCHostName
-            } else {
-                $action = "Enable-Mailbox -Identity $UserName -alias $alias -DomainController $DCHostName"
-                Write-log $action
-                $NewMailbox = Enable-Mailbox -Identity $UserName -alias $alias -DomainController $DCHostName
-            }
+            $action = "Enable-Mailbox -Identity $UserName -alias $alias -DomainController $DCHostName"
+            Write-log $action
+            $NewMailbox = Enable-Mailbox -Identity $UserName -alias $alias -DomainController $DCHostName
             if (-not $?) {
                 Write-Log "ERROR: Error creating Exchange mailbox for $UserName - mailbox may not have been created correctly" -ForegroundColor Red
             } else {
@@ -230,14 +223,13 @@ function Update-Mailbox-OnPrem {
 #====================================================================
 function Create-Mailbox-Hybrid {
     param(
-    [string]$UserName,[string]$realname
+    [string]$UserName
     )
     #================================================================
     # Purpose:          To create an Exchange online Mailbox for a user account
     # Assumptions:      Parameters have been set correctly
     # Effects:          Mailbox should be created for user
     # Inputs:           $UserName - SAM account name of user
-    #                   $realname - Real Name to set as Primary SMTP address, read from CSV
     # Calls:            Write-Log function
     # Returns:          $EnabledMailbox
     # Notes:            Uses Remote Powershell & Exchange Management shell snapin
@@ -256,15 +248,9 @@ function Create-Mailbox-Hybrid {
         Write-Log "Creating mailbox"
         $alias = $UserName.ToUpper()     #Alias = uppercase userid
         Try {
-            if ($realname) {
-                $action = "Enable-RemoteMailbox -Identity $UserName -PrimarySmtpAddress $realname@$EmailSuffix -alias $alias -DomainController $DCHostName -remoteroutingaddress $UserName@$O365EmailSuffix"
-                Write-log $action
-                $NewMailbox = Enable-RemoteMailbox -Identity $UserName -PrimarySmtpAddress "$realname@$EmailSuffix" -alias $alias -DomainController $DCHostName -remoteroutingaddress "$UserName@$O365EmailSuffix"
-            } else {
-                $action = "Enable-RemoteMailbox -Identity $UserName -alias $alias -DomainController $DCHostName -remoteroutingaddress $UserName@$O365EmailSuffix"
-                Write-log $action
-                $NewMailbox = Enable-RemoteMailbox -Identity $UserName -alias $alias -DomainController $DCHostName -remoteroutingaddress "$UserName@$O365EmailSuffix"
-            }
+            $action = "Enable-RemoteMailbox -Identity $UserName -alias $alias -DomainController $DCHostName -remoteroutingaddress $UserName@$O365EmailSuffix"
+            Write-log $action
+            $NewMailbox = Enable-RemoteMailbox -Identity $UserName -alias $alias -DomainController $DCHostName -remoteroutingaddress "$UserName@$O365EmailSuffix"
             if (-not $?) {
                 Write-Log "ERROR: Error creating Exchange mailbox for $UserName - mailbox may not have been created correctly" -ForegroundColor Red
             } else {
@@ -536,9 +522,9 @@ if ($ExistingUser) {
         if ($O365 -eq "E") {
             Write-Log "Exchange mailbox for $UserName will be created in Exchange OnPrem"
             Write-Log "Calling Create-Mailbox-OnPrem function with the following parameters:"
-            Write-Log "UserName: $UserName, realname: $RealName"
+            Write-Log "UserName: $UserName"
             $enabledMailboxes = @()
-            $enabledMailboxes += Create-Mailbox-OnPrem -UserName $UserName -realname $RealName
+            $enabledMailboxes += Create-Mailbox-OnPrem -UserName $UserName
             Write-log "Updating Mailboxes"
             foreach ($mailbox in $EnabledMailboxes) {
                 $i = 0
@@ -561,9 +547,9 @@ if ($ExistingUser) {
         if ($O365 -eq "H") {
             Write-Log "Exchange mailbox for $UserName will be created in Exchange Online"
             Write-Log "Calling Create-Mailbox-Hybrid function with the following parameters:"
-            Write-Log "UserName: $UserName, realname: $RealName"
+            Write-Log "UserName: $UserName"
             $enabledMailboxes = @()
-            $enabledMailboxes += Create-Mailbox-Hybrid -UserName $UserName -realname $RealName
+            $enabledMailboxes += Create-Mailbox-Hybrid -UserName $UserName
         }
         Write-Log ("=" * 80)
         Write-Log "Processing for '$DisplayName' ($UserName) complete"
