@@ -427,9 +427,6 @@ Link-GPO -GPOName "CM visual help" -GPOTarget "OU=Hi_Priv_Accounts,OU=IT,$EndPat
 Set-GPPermission -Name "CM visual help" -PermissionLevel None -TargetName "Authenticated Users" -TargetType Group
 Set-GPPermission -Name "CM visual help" -PermissionLevel GpoRead -TargetName "Authenticated Users" -TargetType Group
 Set-GPPermission -Name "CM visual help" -PermissionLevel GpoApply -TargetName "Administrator" -TargetType User
-Import-GPO -BackupGpoName "IESC Trusted Sites" -TargetName "IESC Trusted Sites" -path $GPOLocation -CreateifNeeded
-Link-GPO -GPOName "IESC Trusted Sites" -GPOTarget "OU=$StaffGroup,$EndPath"
-Link-GPO -GPOName "IESC Trusted Sites" -GPOTarget "OU=Hi_Priv_Accounts,OU=IT,$EndPath"
 Import-GPO -BackupGpoName "Deploy Firefox" -TargetName "Deploy Firefox" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
 Link-GPO -GPOName "Deploy Firefox" -GPOTarget "$Location"
 Import-GPO -BackupGpoName "Deploy Notepad++" -TargetName "Deploy Notepad++" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
