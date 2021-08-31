@@ -2,7 +2,6 @@
 param(
     [Parameter(Mandatory)][string]$O365
     , [Parameter(Mandatory)][string]$EmailSuffix
-    , [Parameter][string]$O365EmailSuffix
 )
 
 #====================================================================
