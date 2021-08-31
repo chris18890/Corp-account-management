@@ -677,7 +677,7 @@ Write-Log "$ScriptTitle"
 Write-Log "Errors and warnings will be displayed below. See the log file '$LogFile' for further details of these"
 Write-Log ("=" * 80)
 Write-Log ""
-if ($O365 -eq "E") {
+if ($O365 -eq "E" -or $O365 -eq "H") {
     # Get user credentials for server connectivity (Non-MFA)
     try {
         $Cred = Get-Credential -ErrorAction Stop -Message "Admin credentials for remote sessions:"
