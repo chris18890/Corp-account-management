@@ -46,4 +46,16 @@ if (!$Core) {
         }
     }
 }
-Restart-Computer
+$EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName
+$DNSSuffix = (Get-ADDomain -Identity $Domain).DNSRoot
+$ParentOU = "Domain Computers"
+$Location = "OU=$ParentOU,$EndPath"
+$ServerName = "$env:computername"
+if ((gwmi win32_computersystem).partofdomain -eq $false) {
+    Add-Computer -DomainName "$DNSSuffix" -Restart
+} else {
+    if ((gwmi win32_computersystem).partofdomain -eq $true) {
+        Get-ADComputer $ServerName | Move-ADObject -TargetPath "ou=Servers,$Location"
+        Restart-Computer
+    }
+}
