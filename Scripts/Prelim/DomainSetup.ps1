@@ -34,6 +34,7 @@ $ITGroup = "IT"
 $ITAdminGroup = "IT_Admin"
 $UserPasswordDelegationOU = "OU=$StaffGroup,$EndPath"
 $UserPasswordDelegationGroup = "RG_Password_Admins"
+$SID500 = "Administrator"
 #====================================================================
 
 #====================================================================
@@ -189,7 +190,7 @@ Add-GroupMember -group $ITGroup -Member $ITAdminGroup
 Add-GroupMember -group "Account Operators" -Member "RG_Account_Admins"
 Add-GroupMember -group "Server Operators" -Member "RG_Server_Admins"
 Add-GroupMember -group "DnsAdmins" -Member "RG_DNS_Admins"
-Add-GroupMember -group $ITAdminGroup -Member "Administrator"
+Add-GroupMember -group $ITAdminGroup -Member $SID500
 Add-GroupMember -group "RG_Account_Admins" -Member "UG_Level_2_Admins"
 Add-GroupMember -group "RG_Desktop_Admins" -Member "UG_Level_1_Admins"
 Add-GroupMember -group "RG_$InstallerGroup" -Member "UG_Level_1_Admins"
@@ -201,7 +202,7 @@ Add-GroupMember -group "RG_WDS_Deploy_Servers" -Member "UG_Level_2_Admins"
 Add-GroupMember -group "RG_WDS_Deploy_Clients" -Member "UG_Level_1_Admins"
 Add-GroupMember -group "UG_Level_1_Admins" -Member "UG_Level_2_Admins"
 Add-GroupMember -group "UG_Level_2_Admins" -Member "UG_Level_3_Admins"
-Get-ADUser "Administrator" | Move-ADObject -TargetPath "OU=Hi_Priv_Accounts,OU=$ITGroup,$EndPath"
+Get-ADUser $SID500 | Move-ADObject -TargetPath "OU=Hi_Priv_Accounts,OU=$ITGroup,$EndPath"
 #====================================================================
 
 Write-Host "Creating Permission delegations"
@@ -426,7 +427,7 @@ Link-GPO -GPOName "CM visual help" -GPOTarget "OU=$StaffGroup,$EndPath"
 Link-GPO -GPOName "CM visual help" -GPOTarget "OU=Hi_Priv_Accounts,OU=IT,$EndPath"
 Set-GPPermission -Name "CM visual help" -PermissionLevel None -TargetName "Authenticated Users" -TargetType Group
 Set-GPPermission -Name "CM visual help" -PermissionLevel GpoRead -TargetName "Authenticated Users" -TargetType Group
-Set-GPPermission -Name "CM visual help" -PermissionLevel GpoApply -TargetName "Administrator" -TargetType User
+Set-GPPermission -Name "CM visual help" -PermissionLevel GpoApply -TargetName $SID500 -TargetType User
 Import-GPO -BackupGpoName "Deploy Firefox" -TargetName "Deploy Firefox" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
 Link-GPO -GPOName "Deploy Firefox" -GPOTarget "$Location"
 Import-GPO -BackupGpoName "Deploy Notepad++" -TargetName "Deploy Notepad++" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
