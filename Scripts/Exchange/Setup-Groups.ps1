@@ -173,7 +173,7 @@ New-AcceptedDomain -DomainName $EmailSuffix -DomainType Authoritative -Name $Dom
 Get-EmailAddressPolicy -Identity "Default Policy" | Set-EmailAddressPolicy -EnabledEmailAddressTemplates "SMTP:@$EmailSuffix" -DomainController $DCHostName
 Update-EmailAddressPolicy -Identity "Default Policy" -DomainController $DCHostName
 # add new address policy
-New-EmailAddressPolicy -Name "FirstName LastName" -RecipientFilter "(RecipientType -eq 'UserMailbox')" -RecipientContainer "OU=$StaffGroup,$EndPath" -EnabledEmailAddressTemplates "SMTP:%g.%s@$EmailSuffix" -Priority 1 -DomainController $DCHostName
+New-EmailAddressPolicy -Name "FirstName LastName" -RecipientFilter "(RecipientType -eq 'UserMailbox' -or RecipientType -eq 'MailUser')" -RecipientContainer "OU=$StaffGroup,$EndPath" -EnabledEmailAddressTemplates "SMTP:%g.%s@$EmailSuffix" -Priority 1 -DomainController $DCHostName
 Update-EmailAddressPolicy -Identity "FirstName LastName" -DomainController $DCHostName
 foreach ($GroupName in $Groups) {
     Enable-DistributionGroup -Identity $GroupName -DomainController $DCHostName
