@@ -749,19 +749,19 @@ foreach ($USER in $LIST) {
     switch ($SharedEquipmentRoom) {
         "S" {
             $DisplayName = $FirstName
-            $Surname = "Shared"
+            $LastName = "Shared"
             $OUPath = "OU=Shared_Mailbox_Accounts,OU=IT,$EndPath"
             $Enabled = $false
         }
         "E" {
             $DisplayName = $FirstName
-            $Surname = "Equipment"
+            $LastName = "Equipment"
             $OUPath = "OU=Equipment_Mailbox_Accounts,OU=IT,$EndPath"
             $Enabled = $false
         }
         "R" {
             $DisplayName = $FirstName
-            $Surname = "Room"
+            $LastName = "Room"
             $OUPath = "OU=Room_Mailbox_Accounts,OU=IT,$EndPath"
             $Enabled = $false
         }
