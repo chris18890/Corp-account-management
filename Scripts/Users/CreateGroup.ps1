@@ -155,6 +155,7 @@ $RootShare = "Store"
 #====================================================================
 #Group Variables
 #====================================================================
+$GroupsOU = "Groups"
 $GroupCategory = "Security"
 $GroupScope = "Universal"
 $StaffGroup = "Staff"
@@ -212,7 +213,7 @@ $Membership = READ-HOST 'Enter group name - '
 $Description = READ-HOST 'Enter group description - '
 switch ($UserType) {
     "S" {
-        $OU = "Groups"
+        $OU = $GroupsOU
         $OUPath = "OU=$OU,$EndPath"
         Create-ADGroup -GroupName "$Membership" -Path $OUPath -GroupDescription "$Description"
         Add-GroupMember -Group $StaffGroup -Member $Membership

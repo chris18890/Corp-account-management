@@ -652,6 +652,7 @@ $Roles = @("Company Administrator")
 $Level1Roles = @("Helpdesk Administrator", "Service support administrator", "Global Reader")
 $Level2Roles = @("User Administrator", "Groups administrator", "Authentication administrator", "License Administrator")
 $Level3Roles = @("Exchange Administrator", "Teams Administrator", "Sharepoint Administrator", "Privileged authentication administrator")
+$GroupsOU = "Groups"
 $GroupCategory = "Security"
 $GroupScope = "Universal"
 $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -826,8 +827,8 @@ foreach ($USER in $LIST) {
                     # create management group for shared account
                     $GroupName = "sh_$UserName"
                     Write-Log "Creating group $GroupName for shared account management"
-                    Create-ADGroup -GroupName $GroupName -Path "OU=Shared_Mailbox_Access,OU=Groups,$EndPath" -GroupDescription "Group to grant access access to $UserName"
-                    Write-Log "Group $GroupName created in location OU=Shared_Mailbox_Access,OU=Groups,$EndPath"
+                    Create-ADGroup -GroupName $GroupName -Path "OU=Shared_Mailbox_Access,OU=$GroupsOU,$EndPath" -GroupDescription "Group to grant access access to $UserName"
+                    Write-Log "Group $GroupName created in location OU=Shared_Mailbox_Access,OU=$GroupsOU,$EndPath"
                     if ($AdminID) {
                         $CheckAdminID = Get-ADObject -LDAPFilter "(&(objectCategory=user)(objectClass=user)(sAMAccountName=$AdminID))"
                         if ($CheckAdminID) {
@@ -839,8 +840,8 @@ foreach ($USER in $LIST) {
                     # create management group for equipment account
                     $GroupName = "eq_$UserName"
                     Write-Log "Creating group $GroupName for equipment account management"
-                    Create-ADGroup -GroupName $GroupName -Path "OU=Equipment_Mailbox_Access,OU=Groups,$EndPath" -GroupDescription "Group to grant access access to $UserName"
-                    Write-Log "Group $GroupName created in location OU=Equipment_Mailbox_Access,OU=Groups,$EndPath"
+                    Create-ADGroup -GroupName $GroupName -Path "OU=Equipment_Mailbox_Access,OU=$GroupsOU,$EndPath" -GroupDescription "Group to grant access access to $UserName"
+                    Write-Log "Group $GroupName created in location OU=Equipment_Mailbox_Access,OU=$GroupsOU,$EndPath"
                     if ($AdminID) {
                         if ($Managed -eq "M") {
                             $Assistant = $AdminID + " (M)"
@@ -860,8 +861,8 @@ foreach ($USER in $LIST) {
                     # create management group for room account
                     $GroupName = "ro_$UserName"
                     Write-Log "Creating group $GroupName for room account management"
-                    Create-ADGroup -GroupName $GroupName -Path "OU=Room_Mailbox_Access,OU=Groups,$EndPath" -GroupDescription "Group to grant access access to $UserName"
-                    Write-Log "Group $GroupName created in location OU=Room_Mailbox_Access,OU=Groups,$EndPath"
+                    Create-ADGroup -GroupName $GroupName -Path "OU=Room_Mailbox_Access,OU=$GroupsOU,$EndPath" -GroupDescription "Group to grant access access to $UserName"
+                    Write-Log "Group $GroupName created in location OU=Room_Mailbox_Access,OU=$GroupsOU,$EndPath"
                     if ($Capacity) {
                         Write-Log "Setting Title for Room Account to 'Cap: $Capacity'..."
                         $objNewUserDE.PSBase.InvokeSet("title","Cap: $Capacity")
