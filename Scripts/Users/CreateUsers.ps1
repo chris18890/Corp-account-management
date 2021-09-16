@@ -146,11 +146,11 @@ function Create-Mailbox-OnPrem {
     #================================================================
     if (-not $?) {
         $e = $_.Exception
-        Write-Log $e
+        Write-Log $e -ForegroundColor Red
         $line = $_.InvocationInfo.ScriptLineNumber
-        Write-Log $line
+        Write-Log $line -ForegroundColor Red
         $msg = $e.Message
-        Write-Log $msg
+        Write-Log $msg -ForegroundColor Red
         $Action = "ERROR: Error loading Exchange cmdlets - script cannot create Exchange mailbox"
         Write-Log $Action -ForegroundColor Red
     } else {
@@ -219,13 +219,13 @@ function Create-Mailbox-OnPrem {
             }
         } catch {
             $e = $_.Exception
-            Write-Log $e
+            Write-Log $e -ForegroundColor Red
             $line = $_.InvocationInfo.ScriptLineNumber
-            Write-Log $line
+            Write-Log $line -ForegroundColor Red
             $msg = $e.Message
-            Write-Log $msg
+            Write-Log $msg -ForegroundColor Red
             $Action = "Failed to enable Mailbox or update settings"
-            Write-Log $Action
+            Write-Log $Action -ForegroundColor Red
         }
         Write-Log "End of Mailbox Creation Function"
     }
@@ -329,13 +329,13 @@ function Update-Mailbox-OnPrem {
             }
         } catch {
             $e = $_.Exception
-            Write-Log $e
+            Write-Log $e -ForegroundColor Red
             $line = $_.InvocationInfo.ScriptLineNumber
-            Write-Log $line
+            Write-Log $line -ForegroundColor Red
             $msg = $e.Message
-            Write-Log $msg
+            Write-Log $msg -ForegroundColor Red
             $Action = "Failed to Complete Mailbox Update"
-            Write-Log $Action
+            Write-Log $Action -ForegroundColor Red
         }
     }
     Write-Log "End of Mailbox Update Function"
@@ -441,13 +441,13 @@ function Create-Mailbox-Hybrid {
             }
         } Catch {
             $e = $_.Exception
-            Write-Log $e
+            Write-Log $e -ForegroundColor Red
             $line = $_.InvocationInfo.ScriptLineNumber
-            Write-Log $line
+            Write-Log $line -ForegroundColor Red
             $msg = $e.Message
-            Write-Log $msg
+            Write-Log $msg -ForegroundColor Red
             $Action = "Failed to enable Mailbox or update settings"
-            Write-Log $Action
+            Write-Log $Action -ForegroundColor Red
         }
         Write-Log "End of Mailbox Creation Function"
     }
@@ -554,13 +554,13 @@ function Update-Mailbox-Hybrid {
             }
         } Catch {
             $e = $_.Exception
-            Write-Log $e
+            Write-Log $e -ForegroundColor Red
             $line = $_.InvocationInfo.ScriptLineNumber
-            Write-Log $line
+            Write-Log $line -ForegroundColor Red
             $msg = $e.Message
-            Write-Log $msg
+            Write-Log $msg -ForegroundColor Red
             $Action = "Failed to Complete Mailbox Update"
-            Write-Log $Action
+            Write-Log $Action -ForegroundColor Red
         }
     }
     Write-Log "End of Mailbox Update Function"
