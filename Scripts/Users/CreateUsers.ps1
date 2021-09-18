@@ -5,6 +5,35 @@ param(
 )
 
 #====================================================================
+#Domain Names in ADS & DNS format, and main OU name
+#====================================================================
+$Domain = "$env:userdomain"
+$EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName
+$DNSSuffix = (Get-ADDomain -Identity $Domain).DNSRoot
+# Group settings
+$GroupsOU = "Groups"
+$GroupCategory = "Security"
+$GroupScope = "Universal"
+$SharedGroupsOU = "OU=Shared_Mailbox_Access,OU=$GroupsOU"
+$EquipmentGroupsOU = "OU=Equipment_Mailbox_Access,OU=$GroupsOU"
+$RoomGroupsOU = "OU=Room_Mailbox_Access,OU=$GroupsOU"
+$SharedAccountsOU = "OU=Shared_Mailbox_Accounts"
+$EquipmentAccountsOU = "OU=Equipment_Mailbox_Accounts"
+$RoomAccountsOU = "OU=Room_Mailbox_Accounts"
+# ADConnect & Exchange settings
+$DCHostName = (Get-ADDomainController).HostName # Use this DC for all create/update operations, otherwise aspects may fail due to replication/timing issues
+$ExServer = "$Domain-EXCH.$DNSSuffix" #Remote Exchange PS session
+$AzureADConnect = "$Domain-RTR.$DNSSuffix"
+# Get containing folder for script to locate supporting files
+$ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+# Set variables
+$ScriptTitle = "$Domain User Creation Script"
+$EnabledMailboxes = @() # Array to Store Completed Mailbox requests for later enumeration
+# File locations
+$LogPath = "$ScriptPath\LogFiles"
+#====================================================================
+
+#====================================================================
 #Set up logging
 #====================================================================
 function Write-Log {
@@ -24,70 +53,6 @@ function Write-Log {
         Write-Host $LogString -ForegroundColor $ForegroundColor
     } else {
         Write-Host $LogString
-    }
-}
-#====================================================================
-
-#====================================================================
-#group creation function
-#====================================================================
-Function Create-ADGroup {
-    [CmdletBinding()]
-    param(
-        [string]$GroupName,[String]$Path,[String]$GroupDescription
-    )
-    $Error.Clear()
-    try {
-        New-ADGroup -GroupCategory $GroupCategory -GroupScope $GroupScope -Name $GroupName -OtherAttributes:@{mail="$GroupName@$EmailSuffix"} -Path $Path -SamAccountName $GroupName -Server $DCHostName -Description $GroupDescription
-    }
-    catch [Microsoft.ActiveDirectory.Management.ADException] {
-        Write-Log "'$GroupName' already exists" -ForegroundColor Green
-    }
-    if ($O365 -eq "E") {
-        Enable-DistributionGroup -Identity $GroupName -DomainController $DCHostName
-        Set-DistributionGroup -Identity $GroupName -HiddenFromAddressListsEnabled $true -RequireSenderAuthenticationEnabled $true -DomainController $DCHostName
-    }
-}
-#====================================================================
-
-#====================================================================
-#group addition function
-#====================================================================
-function Add-GroupMember {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][string]$Group,
-        [Parameter(Mandatory)][string]$Member
-    )
-    #================================================================
-    # Purpose:          To add a user account or group to a group
-    # Assumptions:      Parameters have been set correctly
-    # Effects:          User will be added to the group
-    # Inputs:           $Group - Group name as set before calling the function
-    #                   $Member - Object to be added
-    # Returns:
-    # Notes:
-    #================================================================
-    $Error.Clear()
-    $checkGroup = Get-ADGroup -LDAPFilter "(SAMAccountName=$Group)"
-    if ($checkGroup -ne $null) {
-        Write-Log "Adding $Member to $Group"
-        try {
-            Add-ADGroupMember -Identity $Group -Members $Member -Server $DCHostName
-            Write-Log "Added $Member to $Group"
-        }
-        catch [Microsoft.ActiveDirectory.Management.ADException] {
-            switch ($Error[0].Exception.ErrorCode) {
-                1378 { # 'The specified object is already a member of the group'
-                    Write-Log "'$Member' is already a member of group '$Group'" -ForegroundColor Green
-                }
-                default {
-                    Write-Log "ERROR: An unexpected error occurred while attempting to add user '$Member' to a group:`n$($Error[0].InvocationInfo.InvocationName) : $($Error[0].Exception.message)`n$($Error[0].InvocationInfo.PositionMessage)`n+ CategoryInfo : $($Error[0].CategoryInfo)`n+ FullyQualifiedErrorId : $($Error[0].FullyQualifiedErrorId)" -ForegroundColor Red
-                }
-            }
-        }
-    } else {
-        Write-Log "$Group does not exist" -ForegroundColor Red
     }
 }
 #====================================================================
@@ -521,8 +486,8 @@ function Update-Mailbox-Hybrid {
                         Write-Log "Updating Equipment Mailbox $UserName : Updating Calendar Processing"
                         Set-CalendarProcessing -Identity $UserName -AutomateProcessing AutoAccept -confirm:$false #-DomainController $DCHostName
                         $GroupName = "eq_$UserName"
-                        Add-MailboxPermission $UserName -User $AdminID -AccessRights FullAccess -confirm:$false #-DomainController $DCHostName
-                        Add-RecipientPermission $UserName -Trustee $AdminID -Accessrights "SendAs" -confirm:$false #-DomainController $DCHostName
+                        Add-MailboxPermission $UserName -User $GroupName -AccessRights FullAccess -confirm:$false #-DomainController $DCHostName
+                        Add-RecipientPermission $UserName -Trustee $GroupName -Accessrights "SendAs" -confirm:$false #-DomainController $DCHostName
                         Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                     }
                     "R" {
@@ -544,8 +509,8 @@ function Update-Mailbox-Hybrid {
                             Set-Mailbox -Identity $UserName -ResourceCapacity $Capacity #-DomainController $DCHostName
                         }
                         $GroupName = "ro_$UserName"
-                        Add-MailboxPermission $UserName -User $AdminID -AccessRights FullAccess -confirm:$false #-DomainController $DCHostName
-                        Add-RecipientPermission $UserName -Trustee $AdminID -Accessrights "SendAs" -confirm:$false #-DomainController $DCHostName
+                        Add-MailboxPermission $UserName -User $GroupName -AccessRights FullAccess -confirm:$false #-DomainController $DCHostName
+                        Add-RecipientPermission $UserName -Trustee $GroupName -Accessrights "SendAs" -confirm:$false #-DomainController $DCHostName
                         Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                     }
                 }
@@ -634,14 +599,71 @@ function Test-Cred {
 #====================================================================
 
 #====================================================================
-#Domain Names in ADS & DNS format, and main OU name
+#group creation function
 #====================================================================
+Function Create-ADGroup {
+    [CmdletBinding()]
+    param(
+        [string]$GroupName,[String]$Path,[String]$GroupDescription
+    )
+    $Error.Clear()
+    try {
+        New-ADGroup -GroupCategory $GroupCategory -GroupScope $GroupScope -Name $GroupName -OtherAttributes:@{mail="$GroupName@$EmailSuffix"} -Path $Path -SamAccountName $GroupName -Server $DCHostName -Description $GroupDescription
+    }
+    catch [Microsoft.ActiveDirectory.Management.ADException] {
+        Write-Log "'$GroupName' already exists" -ForegroundColor Green
+    }
+    if ($O365 -eq "E" -or $O365 -eq "H") {
+        Enable-DistributionGroup -Identity $GroupName -DomainController $DCHostName
+        Set-DistributionGroup -Identity $GroupName -HiddenFromAddressListsEnabled $true -RequireSenderAuthenticationEnabled $true -DomainController $DCHostName
+    }
+}
+#====================================================================
+
+#====================================================================
+#group addition function
+#====================================================================
+function Add-GroupMember {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Group
+        , [Parameter(Mandatory)][string]$Member
+    )
+    #================================================================
+    # Purpose:          To add a user account or group to a group
+    # Assumptions:      Parameters have been set correctly
+    # Effects:          User will be added to the group
+    # Inputs:           $Group - Group name as set before calling the function
+    #                   $Member - Object to be added
+    # Calls:            Write-Log function
+    # Returns:
+    # Notes:
+    #================================================================
+    $Error.Clear()
+    $checkGroup = Get-ADGroup -LDAPFilter "(SAMAccountName=$Group)"
+    if ($checkGroup -ne $null) {
+        Write-Log "Adding $Member to $Group"
+        try {
+            Add-ADGroupMember -Identity $Group -Members $Member -Server $DCHostName
+            Write-Log "Added $Member to $Group"
+        }
+        catch [Microsoft.ActiveDirectory.Management.ADException] {
+            switch ($Error[0].Exception.ErrorCode) {
+                1378 { # 'The specified object is already a member of the group'
+                    Write-Log "'$Member' is already a member of group '$Group'" -ForegroundColor Yellow
+                }
+                default {
+                    Write-Log "ERROR: An unexpected error occurred while attempting to add user '$Member' to a group:`n$($Error[0].InvocationInfo.InvocationName) : $($Error[0].Exception.message)`n$($Error[0].InvocationInfo.PositionMessage)`n+ CategoryInfo : $($Error[0].CategoryInfo)`n+ FullyQualifiedErrorId : $($Error[0].FullyQualifiedErrorId)" -ForegroundColor Red
+                }
+            }
+        }
+    } else {
+        Write-Log "$Group does not exist" -ForegroundColor Red
+    }
+}
+#====================================================================
+
 $OU = "Staff"
-$Domain = "$env:userdomain"
-$EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName
-$DNSSuffix = (Get-ADDomain -Identity $Domain).DNSRoot
-$DCHostName = (Get-ADDomainController).HostName # Use this DC for all create/update operations, otherwise aspects may fail due to replication/timing issues
-$ExServer = "$Domain-Exch.$DNSSuffix" #Remote Exchange PS session
 $UserPassword = READ-HOST 'Enter a password for the new account - '
 $O365 = $O365.ToUpper()
 if ($O365 -eq "H") {
@@ -652,12 +674,6 @@ $Roles = @("Company Administrator")
 $Level1Roles = @("Helpdesk Administrator", "Service support administrator", "Global Reader")
 $Level2Roles = @("User Administrator", "Groups administrator", "Authentication administrator", "License Administrator")
 $Level3Roles = @("Exchange Administrator", "Teams Administrator", "Sharepoint Administrator", "Privileged authentication administrator")
-$GroupsOU = "Groups"
-$GroupCategory = "Security"
-$GroupScope = "Universal"
-$ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ScriptTitle = "$Domain User Creation Script"
-$LogPath = "$ScriptPath\LogFiles"
 if (!(TEST-PATH $LogPath)) {
     Write-Log "Creating log folder"
     New-Item "$LogPath" -type directory -force
@@ -750,19 +766,19 @@ foreach ($USER in $LIST) {
         "S" {
             $DisplayName = $FirstName
             $LastName = "Shared"
-            $OUPath = "OU=Shared_Mailbox_Accounts,OU=IT,$EndPath"
+            $OUPath = "$SharedAccountsOU,OU=IT,$EndPath"
             $Enabled = $false
         }
         "E" {
             $DisplayName = $FirstName
             $LastName = "Equipment"
-            $OUPath = "OU=Equipment_Mailbox_Accounts,OU=IT,$EndPath"
+            $OUPath = "$EquipmentAccountsOU,OU=IT,$EndPath"
             $Enabled = $false
         }
         "R" {
             $DisplayName = $FirstName
             $LastName = "Room"
-            $OUPath = "OU=Room_Mailbox_Accounts,OU=IT,$EndPath"
+            $OUPath = "$RoomAccountsOU,OU=IT,$EndPath"
             $Enabled = $false
         }
         default {
@@ -827,8 +843,8 @@ foreach ($USER in $LIST) {
                     # create management group for shared account
                     $GroupName = "sh_$UserName"
                     Write-Log "Creating group $GroupName for shared account management"
-                    Create-ADGroup -GroupName $GroupName -Path "OU=Shared_Mailbox_Access,OU=$GroupsOU,$EndPath" -GroupDescription "Group to grant access access to $UserName"
-                    Write-Log "Group $GroupName created in location OU=Shared_Mailbox_Access,OU=$GroupsOU,$EndPath"
+                    Create-ADGroup -GroupName $GroupName -Path "$SharedGroupsOU,$EndPath" -GroupDescription "Group to grant access access to $UserName"
+                    Write-Log "Group $GroupName created in location $SharedGroupsOU,$EndPath"
                     if ($AdminID) {
                         $CheckAdminID = Get-ADObject -LDAPFilter "(&(objectCategory=user)(objectClass=user)(sAMAccountName=$AdminID))"
                         if ($CheckAdminID) {
@@ -840,8 +856,8 @@ foreach ($USER in $LIST) {
                     # create management group for equipment account
                     $GroupName = "eq_$UserName"
                     Write-Log "Creating group $GroupName for equipment account management"
-                    Create-ADGroup -GroupName $GroupName -Path "OU=Equipment_Mailbox_Access,OU=$GroupsOU,$EndPath" -GroupDescription "Group to grant access access to $UserName"
-                    Write-Log "Group $GroupName created in location OU=Equipment_Mailbox_Access,OU=$GroupsOU,$EndPath"
+                    Create-ADGroup -GroupName $GroupName -Path "$EquipmentGroupsOU,$EndPath" -GroupDescription "Group to grant access access to $UserName"
+                    Write-Log "Group $GroupName created in location $EquipmentGroupsOU,$EndPath"
                     if ($AdminID) {
                         if ($Managed -eq "M") {
                             $Assistant = $AdminID + " (M)"
@@ -861,8 +877,8 @@ foreach ($USER in $LIST) {
                     # create management group for room account
                     $GroupName = "ro_$UserName"
                     Write-Log "Creating group $GroupName for room account management"
-                    Create-ADGroup -GroupName $GroupName -Path "OU=Room_Mailbox_Access,OU=$GroupsOU,$EndPath" -GroupDescription "Group to grant access access to $UserName"
-                    Write-Log "Group $GroupName created in location OU=Room_Mailbox_Access,OU=$GroupsOU,$EndPath"
+                    Create-ADGroup -GroupName $GroupName -Path "$RoomGroupsOU,$EndPath" -GroupDescription "Group to grant access access to $UserName"
+                    Write-Log "Group $GroupName created in location $RoomGroupsOU,$EndPath"
                     if ($Capacity) {
                         Write-Log "Setting Title for Room Account to 'Cap: $Capacity'..."
                         $objNewUserDE.PSBase.InvokeSet("title","Cap: $Capacity")
@@ -907,7 +923,6 @@ foreach ($USER in $LIST) {
                 Write-Log "Exchange mailbox for $UserName will be created in Exchange OnPrem"
                 Write-Log "Calling Create-Mailbox-OnPrem function with the following parameters:"
                 Write-Log "UserName: $UserName, realname: $RealName, SharedEquipmentRoom: $SharedEquipmentRoom, Capacity: $Capacity"
-                $enabledMailboxes = @()
                 $enabledMailboxes += Create-Mailbox-OnPrem -UserName $UserName -realname $RealName -SharedEquipmentRoom $SharedEquipmentRoom -Capacity $Capacity
                 Write-log "Updating Mailboxes"
                 foreach ($mailbox in $EnabledMailboxes) {
@@ -938,7 +953,6 @@ foreach ($USER in $LIST) {
                 Write-Log "Exchange mailbox for $UserName will be created in Exchange Online"
                 Write-Log "Calling Create-Mailbox-Hybrid function with the following parameters:"
                 Write-Log "UserName: $UserName, realname: $RealName, SharedEquipmentRoom: $SharedEquipmentRoom, Capacity: $Capacity"
-                $enabledMailboxes = @()
                 $enabledMailboxes += Create-Mailbox-Hybrid -UserName $UserName -realname $RealName -SharedEquipmentRoom $SharedEquipmentRoom -Capacity $Capacity
             }
             $CreatedUsers += $USER

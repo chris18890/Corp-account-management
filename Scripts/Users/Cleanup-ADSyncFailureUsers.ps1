@@ -4,6 +4,15 @@ param(
     , [Parameter(Mandatory)][string]$EmailSuffix
 )
 
+$ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ScriptTitle = "$Domain User Sync Script"
+$LogPath = "$ScriptPath\LogFiles"
+$O365 = $O365.ToUpper()
+$Roles = @("Company Administrator")
+$Level1Roles = @("Helpdesk Administrator", "Service support administrator", "Global Reader")
+$Level2Roles = @("User Administrator", "Groups administrator", "Authentication administrator", "License Administrator")
+$Level3Roles = @("Exchange Administrator", "Teams Administrator", "Sharepoint Administrator", "Privileged authentication administrator")
+
 #====================================================================
 #Set up logging
 #====================================================================
@@ -28,10 +37,6 @@ function Write-Log {
 }
 #====================================================================
 
-$O365 = $O365.ToUpper()
-$ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ScriptTitle = "$Domain User Sync Script"
-$LogPath = "$ScriptPath\LogFiles"
 if (!(TEST-PATH $LogPath)) {
     Write-Log "Creating log folder"
     New-Item "$LogPath" -type directory -force
@@ -73,10 +78,6 @@ try {
     Connect-ExchangeOnline
     Write-Log "Pausing for 30 seconds"
     Start-Sleep -s 30
-    $Roles = @("Company Administrator")
-    $Level1Roles = @("Helpdesk Administrator", "Service support administrator", "Global Reader")
-    $Level2Roles = @("User Administrator", "Groups administrator", "Authentication administrator", "License Administrator")
-    $Level3Roles = @("Exchange Administrator", "Teams Administrator", "Sharepoint Administrator", "Privileged authentication administrator")
     foreach ($USER in $CreatedUsers) {
         $UserName = $USER.USERNAME
         $UserName = $UserName.Trim() -replace '[^A-Za-z0-9]', [String]::Empty # Strip out illegal characters from User ID

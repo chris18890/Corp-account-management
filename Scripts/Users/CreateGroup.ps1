@@ -6,6 +6,32 @@ param(
 )
 
 #====================================================================
+#Domain Names in ADS & DNS format, and main OU name
+#====================================================================
+$Domain = "$env:userdomain"
+$EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName
+$DNSSuffix = (Get-ADDomain -Identity $Domain).DNSRoot
+$DCHostName = (Get-ADDomainController).HostName # Use this DC for all create/update operations, otherwise aspects may fail due to replication/timing issues
+Write-Host "DC being used is '$DCHostName'"
+$ExServer = "$Domain-EXCH.$DNSSuffix" #Remote Exchange PS session
+#====================================================================
+
+#====================================================================
+#Drive where all the folders will be created
+#====================================================================
+$RootShare = "Store"
+#====================================================================
+
+#====================================================================
+#Group Variables
+#====================================================================
+$GroupsOU = "Groups"
+$GroupCategory = "Security"
+$GroupScope = "Universal"
+$StaffGroup = "Staff"
+#====================================================================
+
+#====================================================================
 #group creation function
 #====================================================================
 Function Create-ADGroup {
@@ -20,7 +46,7 @@ Function Create-ADGroup {
     catch [Microsoft.ActiveDirectory.Management.ADException] {
         Write-Host "'$GroupName' already exists" -ForegroundColor Green
     }
-    if ($O365 -eq "E") {
+    if ($O365 -eq "E" -or $O365 -eq "H") {
         Enable-DistributionGroup -Identity $GroupName -DomainController $DCHostName -Description $GroupDescription
         Set-DistributionGroup -Identity $GroupName -RequireSenderAuthenticationEnabled $true -DomainController $DCHostName
     }
@@ -33,8 +59,8 @@ Function Create-ADGroup {
 function Add-GroupMember {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][string]$Group,
-        [Parameter(Mandatory)][string]$Member
+        [Parameter(Mandatory)][string]$Group
+        , [Parameter(Mandatory)][string]$Member
     )
     #================================================================
     # Purpose:          To add a user account or group to a group
@@ -42,6 +68,7 @@ function Add-GroupMember {
     # Effects:          User will be added to the group
     # Inputs:           $Group - Group name as set before calling the function
     #                   $Member - Object to be added
+    # Calls:            Write-Log function
     # Returns:
     # Notes:
     #================================================================
@@ -56,7 +83,7 @@ function Add-GroupMember {
         catch [Microsoft.ActiveDirectory.Management.ADException] {
             switch ($Error[0].Exception.ErrorCode) {
                 1378 { # 'The specified object is already a member of the group'
-                    Write-Host "'$Member' is already a member of group '$Group'" -ForegroundColor Green
+                    Write-Host "'$Member' is already a member of group '$Group'" -ForegroundColor Yellow
                 }
                 default {
                     Write-Host "ERROR: An unexpected error occurred while attempting to add user '$Member' to a group:`n$($Error[0].InvocationInfo.InvocationName) : $($Error[0].Exception.message)`n$($Error[0].InvocationInfo.PositionMessage)`n+ CategoryInfo : $($Error[0].CategoryInfo)`n+ FullyQualifiedErrorId : $($Error[0].FullyQualifiedErrorId)" -ForegroundColor Red
@@ -136,33 +163,7 @@ function Test-Cred {
 #====================================================================
 
 #====================================================================
-#Domain Names in ADS & DNS format, and main OU name
-#====================================================================
-$Domain = "$env:userdomain"
-$EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName
-$DNSSuffix = (Get-ADDomain -Identity $Domain).DNSRoot
-$DCHostName = (Get-ADDomainController).HostName # Use this DC for all create/update operations, otherwise aspects may fail due to replication/timing issues
-Write-Host "DC being used is '$DCHostName'"
-$ExServer = "$Domain-Exch.$DNSSuffix" #Remote Exchange PS session
-#====================================================================
-
-#====================================================================
-#Drive where all the folders will be created
-#====================================================================
-$RootShare = "Store"
-#====================================================================
-
-#====================================================================
-#Group Variables
-#====================================================================
-$GroupsOU = "Groups"
-$GroupCategory = "Security"
-$GroupScope = "Universal"
-$StaffGroup = "Staff"
-#====================================================================
-
-#====================================================================
-if ($O365 -eq "E") {
+if ($O365 -eq "E" -or $O365 -eq "H") {
     # Get user credentials for server connectivity (Non-MFA)
     Try {
         $Cred = Get-Credential -ErrorAction Stop -Message "Admin credentials for remote sessions:"

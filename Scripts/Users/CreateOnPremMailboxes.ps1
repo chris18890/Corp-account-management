@@ -4,6 +4,24 @@ param(
 )
 
 #====================================================================
+#Domain Names in ADS & DNS format, and main OU name
+#====================================================================
+$Domain = "$env:userdomain"
+$EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName
+$DNSSuffix = (Get-ADDomain -Identity $Domain).DNSRoot
+# ADConnect & Exchange settings
+$DCHostName = (Get-ADDomainController).HostName # Use this DC for all create/update operations, otherwise aspects may fail due to replication/timing issues
+$ExServer = "$Domain-EXCH.$DNSSuffix" #Remote Exchange PS session
+# Get containing folder for script to locate supporting files
+$ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+# Set variables
+$ScriptTitle = "$Domain User Mailbox Creation Script"
+$EnabledMailboxes = @() # Array to Store Completed Mailbox requests for later enumeration
+# File locations
+$LogPath = "$ScriptPath\LogFiles"
+#====================================================================
+
+#====================================================================
 #Set up logging
 #====================================================================
 function Write-Log {
@@ -311,17 +329,6 @@ function Test-Cred {
 }
 #====================================================================
 
-#====================================================================
-#Domain Names in ADS & DNS format, and main OU name
-#====================================================================
-$Domain = "$env:userdomain"
-$EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName
-$DNSSuffix = (Get-ADDomain -Identity $Domain).DNSRoot
-$DCHostName = (Get-ADDomainController).HostName # Use this DC for all create/update operations, otherwise aspects may fail due to replication/timing issues
-$ExServer = "$Domain-Exch.$DNSSuffix" #Remote Exchange PS session
-$ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ScriptTitle = "$Domain User Mailbox Creation Script"
-$LogPath = "$ScriptPath\LogFiles"
 if (!(TEST-PATH $LogPath)) {
     Write-Log "Creating log folder"
     New-Item "$LogPath" -type directory -force
@@ -403,7 +410,6 @@ foreach ($USER in $LIST) {
             Write-Log "Exchange mailbox for $UserName will be created in Exchange OnPrem"
             Write-Log "Calling Create-Mailbox-OnPrem function with the following parameters:"
             Write-Log "UserName: $UserName, realname: $RealName, SharedEquipmentRoom: $SharedEquipmentRoom, Capacity: $Capacity"
-            $enabledMailboxes = @()
             $enabledMailboxes += Create-Mailbox-OnPrem -UserName $UserName -realname $RealName -SharedEquipmentRoom $SharedEquipmentRoom -Capacity $Capacity
             switch ($SharedEquipmentRoom) {
                 "S" {
