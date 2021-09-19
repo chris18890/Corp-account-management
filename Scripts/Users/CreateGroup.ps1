@@ -256,7 +256,7 @@ switch ($UserType) {
 #====================================================================
 
 #====================================================================
-if ($O365 -eq "E") {
+if ($O365 -eq "E" -or $O365 -eq "H") {
     if (Get-PSSession -Name ExSession -ErrorAction SilentlyContinue) {
         Remove-PsSession $ExSession
         Write-Host "Closed Exchange session."

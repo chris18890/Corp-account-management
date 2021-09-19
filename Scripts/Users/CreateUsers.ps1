@@ -1129,7 +1129,7 @@ if ($O365 -eq "Y" -or $O365 -eq "H") {
         Write-Log ""
     }
 }
-if ($O365 -eq "E") {
+if ($O365 -eq "E" -or $O365 -eq "H") {
     if (Get-PSSession -Name ExSession -ErrorAction SilentlyContinue) {
         Remove-PsSession $ExSession
         Write-Log "Closed Exchange session."
