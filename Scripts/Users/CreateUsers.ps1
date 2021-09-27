@@ -341,7 +341,7 @@ function Create-Mailbox-Hybrid {
         #Create Exchange mailbox
         Write-Log "Creating mailbox"
         $alias = $UserName.ToUpper()     #Alias = uppercase userid
-        Try {
+        try {
             Switch ($SharedEquipmentRoom) {
                 "S" {
                     if ($realname) {
@@ -404,7 +404,7 @@ function Create-Mailbox-Hybrid {
                 $EnabledMailbox.Capacity = $Capacity
                 Return $EnabledMailbox
             }
-        } Catch {
+        } catch {
             $e = $_.Exception
             Write-Log $e -ForegroundColor Red
             $line = $_.InvocationInfo.ScriptLineNumber
@@ -448,7 +448,7 @@ function Update-Mailbox-Hybrid {
         #Update Exchange mailbox
         $alias = $UserName.ToUpper()     #Alias = uppercase userid
         $MBX = $null
-        Try {
+        try {
             $MBX = Get-Mailbox -Identity $UserName
             $i = 0
             while (!($MBX) -and ($i -le 6)) {
@@ -517,7 +517,7 @@ function Update-Mailbox-Hybrid {
                 #Write-Log "Enabling Litigation hold on Mailbox $UserName"
                 #Set-Mailbox -Identity $UserName -LitigationHoldEnabled $true -LitigationHoldDuration 365
             }
-        } Catch {
+        } catch {
             $e = $_.Exception
             Write-Log $e -ForegroundColor Red
             $line = $_.InvocationInfo.ScriptLineNumber
@@ -601,7 +601,7 @@ function Test-Cred {
 #====================================================================
 #group creation function
 #====================================================================
-Function Create-ADGroup {
+function Create-ADGroup {
     [CmdletBinding()]
     param(
         [string]$GroupName,[String]$Path,[String]$GroupDescription

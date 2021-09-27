@@ -230,7 +230,7 @@ function Create-Mailbox-Hybrid {
         #Create Exchange mailbox
         Write-Log "Creating mailbox"
         $alias = $UserName.ToUpper()     #Alias = uppercase userid
-        Try {
+        try {
             $action = "Enable-RemoteMailbox -Identity $UserName -alias $alias -DomainController $DCHostName -remoteroutingaddress $UserName@$O365EmailSuffix"
             Write-log $action
             $NewMailbox = Enable-RemoteMailbox -Identity $UserName -alias $alias -DomainController $DCHostName -remoteroutingaddress "$UserName@$O365EmailSuffix"
@@ -248,7 +248,7 @@ function Create-Mailbox-Hybrid {
                 $EnabledMailbox.alias = $alias
                 Return $EnabledMailbox
             }
-        } Catch {
+        } catch {
             $e = $_.Exception
             Write-Log $e -ForegroundColor Red
             $line = $_.InvocationInfo.ScriptLineNumber
@@ -286,7 +286,7 @@ function Update-Mailbox-Hybrid {
         #Update Exchange mailbox
         $alias = $UserName.ToUpper()     #Alias = uppercase userid
         $MBX = $null
-        Try {
+        try {
             $MBX = Get-Mailbox -Identity $UserName
             $i = 0
             while (!($MBX) -and ($i -le 6)) {
@@ -300,7 +300,7 @@ function Update-Mailbox-Hybrid {
                 $identityStr = $UserName + ":\Calendar"
                 Set-MailboxFolderPermission -Identity $identityStr -User Default -AccessRights Reviewer #-DomainController $DCHostName
             }
-        } Catch {
+        } catch {
             $e = $_.Exception
             Write-Log $e -ForegroundColor Red
             $line = $_.InvocationInfo.ScriptLineNumber

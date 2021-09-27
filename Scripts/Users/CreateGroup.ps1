@@ -34,7 +34,7 @@ $StaffGroup = "Staff"
 #====================================================================
 #group creation function
 #====================================================================
-Function Create-ADGroup {
+function Create-ADGroup {
     [CmdletBinding()]
     param(
         [string]$GroupName,[String]$Path,[String]$GroupDescription
@@ -129,9 +129,9 @@ function Test-Cred {
     $Username = $null
     $Password = $null
     if ($Credentials -eq $null) {
-        Try {
+        try {
             $Credentials = Get-Credential "domain\$env:username" -ErrorAction Stop
-        } Catch {
+        } catch {
             $ErrorMsg = $_.Exception.Message
             Write-Warning "Failed to validate credentials: $ErrorMsg "
             Pause
@@ -139,14 +139,14 @@ function Test-Cred {
         }
     }
     # Checking module
-    Try {
+    try {
         # Split username and password
         $Username = $credentials.username
         $Password = $credentials.GetNetworkCredential().password
         # Get Domain
         $Root = "LDAP://" + ([ADSI]'').distinguishedName
         $Domain = New-Object System.DirectoryServices.DirectoryEntry($Root,$UserName,$Password)
-    } Catch {
+    } catch {
         $_.Exception.Message
         Continue
     }
@@ -165,9 +165,9 @@ function Test-Cred {
 #====================================================================
 if ($O365 -eq "E" -or $O365 -eq "H") {
     # Get user credentials for server connectivity (Non-MFA)
-    Try {
+    try {
         $Cred = Get-Credential -ErrorAction Stop -Message "Admin credentials for remote sessions:"
-    } Catch {
+    } catch {
         $ErrorMsg = $_.Exception.Message
         Write-Host "Failed to validate credentials: $ErrorMsg "
         Pause
