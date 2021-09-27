@@ -1022,7 +1022,7 @@ foreach ($USER in $LIST) {
         }
     }
 }
-if ($O365 -eq "Y" -or $O365 -eq "H") {
+if ($O365 -eq "H") {
     try {
         if (!(Get-Module -ListAvailable -Name MSOnline)) {
             Write-Log "Installing MSOnline module"
@@ -1068,10 +1068,6 @@ if ($O365 -eq "Y" -or $O365 -eq "H") {
                 Set-MailboxFolderPermission -Identity $identityStr -User Default -AccessRights Reviewer
                 switch ($SharedEquipmentRoom) {
                     "S" {
-                        if ($O365 -eq "Y") {
-                            Write-Log "Converting $UserName Mailbox to shared type"
-                            Set-Mailbox -Identity $UserName -type:shared
-                        }
                         Write-Log "Updating Shared Mailbox $UserName : Adding Permissions"
                         $GroupName = "sh_$UserName"
                         Add-MailboxPermission -Identity $UserName -User $GroupName -AccessRights FullAccess -InheritanceType All -confirm:$false
@@ -1079,10 +1075,6 @@ if ($O365 -eq "Y" -or $O365 -eq "H") {
                         Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                     }
                     "E" {
-                        if ($O365 -eq "Y") {
-                            Write-Log "Converting $UserName Mailbox to equipment type"
-                            Set-Mailbox -Identity $UserName -type:equipment
-                        }
                         #Set Default calendar permissions to Author
                         $MBXType = (Get-Mailbox -Identity $UserName).RecipientTypeDetails
                         $x = 0
@@ -1103,10 +1095,6 @@ if ($O365 -eq "Y" -or $O365 -eq "H") {
                         Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                     }
                     "R" {
-                        if ($O365 -eq "Y") {
-                            Write-Log "Converting $UserName Mailbox to room type"
-                            Set-Mailbox -Identity $UserName -type:room
-                        }
                         #Set Default calendar permissions to Author
                         $MBXType = (Get-Mailbox -Identity $UserName).RecipientTypeDetails
                         $x = 0

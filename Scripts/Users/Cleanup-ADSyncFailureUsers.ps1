@@ -1,13 +1,11 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][string]$O365
-    , [Parameter(Mandatory)][string]$EmailSuffix
+    [Parameter(Mandatory)][string]$EmailSuffix
 )
 
 $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ScriptTitle = "$Domain User Sync Script"
 $LogPath = "$ScriptPath\LogFiles"
-$O365 = $O365.ToUpper()
 $Roles = @("Company Administrator")
 $Level1Roles = @("Helpdesk Administrator", "Service support administrator", "Global Reader")
 $Level2Roles = @("User Administrator", "Groups administrator", "Authentication administrator", "License Administrator")
@@ -105,10 +103,6 @@ try {
             Set-MailboxFolderPermission -Identity $identityStr -User Default -AccessRights Reviewer
             switch ($SharedEquipmentRoom) {
                 "S" {
-                    if ($O365 -eq "Y") {
-                        Write-Log "Converting $UserName Mailbox to shared type"
-                        Set-Mailbox -Identity $UserName -type:shared
-                    }
                     Write-Log "Updating Shared Mailbox $UserName : Adding Permissions"
                     $GroupName = "sh_$UserName"
                     Add-MailboxPermission -Identity $UserName -User $GroupName -AccessRights FullAccess -InheritanceType All -confirm:$false
@@ -116,10 +110,6 @@ try {
                     Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                 }
                 "E" {
-                    if ($O365 -eq "Y") {
-                        Write-Log "Converting $UserName Mailbox to equipment type"
-                        Set-Mailbox -Identity $UserName -type:equipment
-                    }
                     #Set Default calendar permissions to Author
                     $MBXType = (Get-Mailbox -Identity $UserName).RecipientTypeDetails
                     $x = 0
@@ -139,10 +129,6 @@ try {
                     Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                 }
                 "R" {
-                    if ($O365 -eq "Y") {
-                        Write-Log "Converting $UserName Mailbox to room type"
-                        Set-Mailbox -Identity $UserName -type:room
-                    }
                     #Set Default calendar permissions to Author
                     $MBXType = (Get-Mailbox -Identity $UserName).RecipientTypeDetails
                     $x = 0
