@@ -599,6 +599,54 @@ function Test-Cred {
 #====================================================================
 
 #====================================================================
+#AD Sync
+#====================================================================
+function Force-ADSync {
+    try {
+        $ADConnectSession = New-PSSession -Computername $AzureADConnect -Credential $Cred
+        Invoke-Command -Session $ADConnectSession {Import-Module ADSync}
+        Import-PSSession -Session $ADConnectSession -Module ADSync -AllowClobber
+        $state = (Get-ADSyncConnectorRunStatus | ? { $_.RunspaceId -eq (Get-ADSyncConnector -Name "$O365EmailSuffix - AAD").runspaceid })
+        $ADSyncLoop = 0
+        while ($State -and $ADSyncLoop -le 10) {
+            Write-log "AD Sync Connector is currently busy, waiting 30 seconds before trying again"
+            Start-Sleep -Seconds 30
+            $State = (Get-ADSyncConnectorRunStatus | ? { $_.RunspaceId -eq (Get-ADSyncConnector -Name "$O365EmailSuffix - AAD").runspaceid })
+            $ADSyncLoop++
+        }
+        if ($ADSyncLoop -ge 10) {
+            Write-log "AD Sync Connector has returned a busy state for 5 minutes or more, if this continues, please contact the servicedesk to investigate further"
+        } else {
+            Write-log "Attempting to run Azure AD Sync Cycle"
+            Start-ADSyncSyncCycle -PolicyType Delta
+        }
+    } catch {
+        $e = $_.Exception
+        Write-Log $e -ForegroundColor Red
+        $line = $_.InvocationInfo.ScriptLineNumber
+        Write-Log $line -ForegroundColor Red
+        $msg = $e.Message
+        Write-Log $msg -ForegroundColor Red
+        $Action = "Unable to Sync AD"
+        Write-Log $Action -ForegroundColor Red
+    }
+    $state = (Get-ADSyncConnectorRunStatus | ? { $_.RunspaceId -eq (Get-ADSyncConnector -Name "$O365EmailSuffix - AAD").runspaceid })
+    $ADSyncLoop = 0
+    while ($State -and $ADSyncLoop -le 10) {
+        Write-log "AD Sync Connector is busy, waiting 30 seconds To allow sync to complete"
+        Start-Sleep -Seconds 30
+        $State = (Get-ADSyncConnectorRunStatus | ? { $_.RunspaceId -eq (Get-ADSyncConnector -Name "$O365EmailSuffix - AAD").runspaceid })
+        $ADSyncLoop++
+    }
+    if (!($state) -and $ADSyncLoop -le 10) {
+        Write-log "AD Sync complete"
+    } else {
+        Write-log "AD Sync has not completed within 5 minutes, please check log for issues relating to syncronization issues."
+    }
+}
+#====================================================================
+
+#====================================================================
 #group creation function
 #====================================================================
 function Create-ADGroup {
