@@ -752,6 +752,7 @@ foreach ($USER in $LIST) {
     $LastName = $LastName.Trim() -replace '[?@\\+]', [String]::Empty # Strip out illegal characters from LastName for Office 365 compliance. Note that \ is escaped to \\
     $UserName = $USER.USERNAME
     $UserName = $UserName.Trim() -replace '[^A-Za-z0-9]', [String]::Empty # Strip out illegal characters from User ID
+    $Description = $USER.Description
     $Company = $USER.COMPANY
     $Dept = $USER.DEPT
     $HiPriv = $USER.HIPRIV.ToUpper()
@@ -814,6 +815,7 @@ foreach ($USER in $LIST) {
                 Name                    = $UserName
                 AccountPassword         = ConvertTo-SecureString -AsPlainText $PASSWORD -Force
                 ChangePasswordAtLogon   = $true
+                Description             = $Description
                 Company                 = $Company
                 Department              = $Dept
                 DisplayName             = $DisplayName
