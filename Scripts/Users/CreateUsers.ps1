@@ -1017,6 +1017,10 @@ foreach ($USER in $LIST) {
     }
 }
 if ($O365 -eq "H") {
+    if (Get-PSSession -Name ExSession -ErrorAction SilentlyContinue) {
+        Remove-PsSession $ExSession
+        Write-Log "Closed Exchange session."
+    }
     try {
         if (!(Get-Module -ListAvailable -Name MSOnline)) {
             Write-Log "Installing MSOnline module"
@@ -1027,8 +1031,7 @@ if ($O365 -eq "H") {
             Install-Module -Name ExchangeOnlineManagement
         }
         Write-Log "Starting AzureAD Sync"
-        Import-Module ADSync
-        Start-ADSyncSyncCycle -PolicyType Delta
+        Force-ADSync $cred
         Write-Log "Connecting to Office 365"
         Connect-MsolService
         Write-Log "Connecting to Exchange Online"
