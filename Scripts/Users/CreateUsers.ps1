@@ -25,6 +25,7 @@ $RoomGroupsOU = "OU=Room_Mailbox_Access,OU=$GroupsOU"
 $SharedAccountsOU = "OU=Shared_Mailbox_Accounts"
 $EquipmentAccountsOU = "OU=Equipment_Mailbox_Accounts"
 $RoomAccountsOU = "OU=Room_Mailbox_Accounts"
+$O365LicenseGroup = "UG_Office365"
 # ADConnect & Exchange settings
 $DCHostName = (Get-ADDomainController).HostName # Use this DC for all create/update operations, otherwise aspects may fail due to replication/timing issues
 $ExServer = "$Domain-EXCH.$DNSSuffix" #Remote Exchange PS session
@@ -950,6 +951,7 @@ foreach ($USER in $LIST) {
                     $objNewUserDE.SetInfo() # Commit changes
                 }
                 default {
+                    Add-GroupMember -Group $O365LicenseGroup -Member $UserName
                     # Set manager
                     if ($Manager) {
                         $CheckManager = Get-ADObject -LDAPFilter "(&(objectCategory=user)(objectClass=user)(sAMAccountName=$Manager))"
