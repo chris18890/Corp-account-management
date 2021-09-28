@@ -19,6 +19,16 @@ $ScriptTitle = "$Domain User Mailbox Creation Script"
 $EnabledMailboxes = @() # Array to Store Completed Mailbox requests for later enumeration
 # File locations
 $LogPath = "$ScriptPath\LogFiles"
+if (!(TEST-PATH $LogPath)) {
+    Write-Log "Creating log folder"
+    New-Item "$LogPath" -type directory -force
+}
+$LogFileName = $Domain + "_mailbox_log-$(Get-Date -Format 'yyyyMMdd')"
+$LogIndex = 0
+while (Test-Path "$LogPath\$($LogFileName)_$LogIndex.log") {
+    $LogIndex ++
+}
+$LogFile = "$LogPath\$($LogFileName)_$LogIndex.log"
 #====================================================================
 
 #====================================================================
@@ -129,9 +139,6 @@ function Create-Mailbox-OnPrem {
                 Write-Log "ERROR: Error creating Exchange mailbox for $UserName - mailbox may not have been created correctly" -ForegroundColor Red
             } else {
                 Write-Log "Mailbox created for $UserName successfully"
-                Write-Log "Creating secondary, UserName based address for $UserName"
-                #Set secondary, $UserName based address
-                Set-Mailbox -Identity $UserName -EmailAddresses @{add="$UserName@$EmailSuffix"} -DomainController $DCHostName
                 $EnabledMailbox = New-Object -Property @{"Alias" = ""; "SharedEquipmentRoom" = ""; "Capacity" =  ""} -TypeName PSObject
                 $EnabledMailbox.alias = $alias
                 $EnabledMailbox.SharedEquipmentRoom = $SharedEquipmentRoom
@@ -329,16 +336,6 @@ function Test-Cred {
 }
 #====================================================================
 
-if (!(TEST-PATH $LogPath)) {
-    Write-Log "Creating log folder"
-    New-Item "$LogPath" -type directory -force
-}
-$LogFileName = $Domain + "_mailbox_log-$(Get-Date -Format 'yyyyMMdd')"
-$LogIndex = 0
-while (Test-Path "$LogPath\$($LogFileName)_$LogIndex.log") {
-    $LogIndex ++
-}
-$LogFile = "$LogPath\$($LogFileName)_$LogIndex.log"
 Write-Log ("=" * 80)
 Write-Log "Log file is '$LogFile'"
 Write-Log "Processing commenced, running as user '$Domain\$env:USERNAME'"

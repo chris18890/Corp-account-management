@@ -146,9 +146,6 @@ function Create-Mailbox-OnPrem {
                 Write-Log "ERROR: Error creating Exchange mailbox for $UserName - mailbox may not have been created correctly" -ForegroundColor Red
             } else {
                 Write-Log "Mailbox created for $UserName successfully"
-                Write-Log "Creating secondary, UserName based address for $UserName"
-                #Set secondary, $UserName based address
-                Set-Mailbox -Identity $UserName -EmailAddresses @{add="$UserName@$EmailSuffix"} -DomainController $DCHostName
                 $EnabledMailbox = New-Object -Property @{"Alias" = ""} -TypeName PSObject
                 $EnabledMailbox.alias = $alias
                 Return $EnabledMailbox
@@ -257,9 +254,6 @@ function Create-Mailbox-Hybrid {
                 Write-Log "ERROR: Error creating Exchange mailbox for $UserName - mailbox may not have been created correctly" -ForegroundColor Red
             } else {
                 Write-Log "Mailbox created for $UserName successfully"
-                Write-Log "Creating secondary, UserName based address for $UserName"
-                #Set secondary, $UserName based address
-                Set-RemoteMailbox -Identity $UserName -EmailAddresses @{add="$UserName@$EmailSuffix"} -DomainController $DCHostName
                 Write-Log "Creating UserName based Office365 address for $UserName"
                 #Set $UserName based Office365 address
                 Set-RemoteMailbox -Identity $UserName -EmailAddresses @{add="$UserName@$O365EmailSuffix"} -DomainController $DCHostName
