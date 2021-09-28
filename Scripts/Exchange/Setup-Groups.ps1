@@ -175,6 +175,8 @@ Update-EmailAddressPolicy -Identity "Default Policy" -DomainController $DCHostNa
 # add new address policy
 New-EmailAddressPolicy -Name "FirstName LastName" -RecipientFilter "(RecipientType -eq 'UserMailbox' -or RecipientType -eq 'MailUser')" -RecipientContainer "OU=$StaffGroup,$EndPath" -EnabledEmailAddressTemplates "SMTP:%g.%s@$EmailSuffix" -Priority 1 -DomainController $DCHostName
 Update-EmailAddressPolicy -Identity "FirstName LastName" -DomainController $DCHostName
+New-EmailAddressPolicy -Name "UserName" -RecipientFilter "(RecipientType -eq 'UserMailbox' -or RecipientType -eq 'MailUser')" -RecipientContainer "OU=$StaffGroup,$EndPath" -EnabledEmailAddressTemplates "SMTP:%m@$EmailSuffix" -Priority 2 -DomainController $DCHostName
+Update-EmailAddressPolicy -Identity "UserName" -DomainController $DCHostName
 foreach ($GroupName in $Groups) {
     Enable-DistributionGroup -Identity $GroupName -DomainController $DCHostName
     Set-DistributionGroup -Identity $GroupName -RequireSenderAuthenticationEnabled $true -DomainController $DCHostName
