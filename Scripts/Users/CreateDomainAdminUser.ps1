@@ -460,6 +460,48 @@ if (!$LogFile) {
     Write-Log ""
     #Validate Password against Password Policy
     Validate-Password -Password $UserPassword
+    if ($O365 -eq "E" -or $O365 -eq "H") {
+        # Get user credentials for server connectivity (Non-MFA)
+        try {
+            $Cred = Get-Credential -ErrorAction Stop -Message "Admin credentials for remote sessions:"
+        } catch {
+            $ErrorMsg = $_.Exception.Message
+            Write-Log "Failed to validate credentials: $ErrorMsg "
+            Pause
+            Break
+        }
+        $CredCheck = $Cred | Test-Cred
+        if ($CredCheck -ne "Authenticated") {
+            Write-Log "Credential validation failed - Script Terminating"
+            pause
+            Exit
+        }
+        #Connect to remote Exchange PowerShell
+        Write-Log "Connecting to remote Exchange PowerShell session... "
+        try {
+            $ExSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri "http://$ExServer/PowerShell" -Name ExSession -Credential $cred -ErrorAction Stop -authentication Kerberos
+            $ExConnected = $true
+            Write-Log "connected."
+            Write-Log "Importing Exchange session... "
+            Import-PSSession -Session $ExSession -ErrorAction Stop -AllowClobber > $null
+            Write-Log "done."
+        } catch {
+            $e = $_.Exception
+            Write-Log $e
+            $line = $_.InvocationInfo.ScriptLineNumber
+            Write-Log $line
+            $msg = $e.Message
+            Write-Log $msg
+            $Action = "Error Importing Exchange Session"
+            Write-Log $Action
+            Write-Log "failed."
+            Write-Log "ERROR: $_" -ForegroundColor Red
+        }
+        if (!$ExSession) {
+            Write-log "Exchange session not connected Stopping Script"
+            Exit
+        }
+    }
 }
 #====================================================================
 
