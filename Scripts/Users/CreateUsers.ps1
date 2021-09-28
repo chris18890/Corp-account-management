@@ -51,6 +51,7 @@ while (Test-Path "$LogPath\$($LogFileName)_$LogIndex.log") {
     $LogIndex ++
 }
 $LogFile = "$LogPath\$($LogFileName)_$LogIndex.log"
+$FailureFile = "$LogPath\$($LogFileName)_$LogIndex-Failures.csv"
 #====================================================================
 
 #====================================================================
@@ -1148,6 +1149,7 @@ if ($O365 -eq "H") {
                 }
             } else {
                 $logmsg = "Mailbox:" + $UserName +" not found in AzureAD"
+                $Failures += $MBX
                 Write-log $logMsg
             }
         }
@@ -1171,6 +1173,13 @@ if ($O365 -eq "E" -or $O365 -eq "H") {
     if (Get-PSSession -Name ExSession -ErrorAction SilentlyContinue) {
         Remove-PsSession $ExSession
         Write-Log "Closed Exchange session."
+    }
+}
+if ($Failures) {
+    if ($Failures.Count -gt 0) {
+        Foreach ($Failure in $Failures) {
+            $LIST[$LIST.USERNAME.Tolower().IndexOf($Failure.alias.ToLower())] | Export-Csv $FailureFile -NoClobber -NoTypeInformation -Append
+        }
     }
 }
 Write-Log ("=" * 80)
