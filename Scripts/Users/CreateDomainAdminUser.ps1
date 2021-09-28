@@ -248,7 +248,7 @@ function Create-Mailbox-Hybrid {
     } else {
         #Create Exchange mailbox
         Write-Log "Creating mailbox"
-        $alias = $UserName.ToUpper()     #Alias = uppercase userid
+        $alias = $UserName.ToUpper()     #Alias = uppercase UserName
         try {
             $action = "Enable-RemoteMailbox -Identity $UserName -alias $alias -DomainController $DCHostName -remoteroutingaddress $UserName@$O365EmailSuffix"
             Write-log $action
@@ -257,11 +257,11 @@ function Create-Mailbox-Hybrid {
                 Write-Log "ERROR: Error creating Exchange mailbox for $UserName - mailbox may not have been created correctly" -ForegroundColor Red
             } else {
                 Write-Log "Mailbox created for $UserName successfully"
-                Write-Log "Creating secondary, UserID based address for $UserName"
-                #Set secondary, $UserID based address
+                Write-Log "Creating secondary, UserName based address for $UserName"
+                #Set secondary, $UserName based address
                 Set-RemoteMailbox -Identity $UserName -EmailAddresses @{add="$UserName@$EmailSuffix"} -DomainController $DCHostName
-                Write-Log "Creating UserID based Office365 address for $UserName"
-                #Set $UserID based Office365 address
+                Write-Log "Creating UserName based Office365 address for $UserName"
+                #Set $UserName based Office365 address
                 Set-RemoteMailbox -Identity $UserName -EmailAddresses @{add="$UserName@$O365EmailSuffix"} -DomainController $DCHostName
                 $EnabledMailbox = New-Object -Property @{"Alias" = ""} -TypeName PSObject
                 $EnabledMailbox.alias = $alias
@@ -303,7 +303,7 @@ function Update-Mailbox-Hybrid {
         Write-Log "ERROR: Error loading Exchange cmdlets - script cannot update Exchange mailbox" -ForegroundColor Red
     } else {
         #Update Exchange mailbox
-        $alias = $UserName.ToUpper()     #Alias = uppercase userid
+        $alias = $UserName.ToUpper()     #Alias = uppercase UserName
         $MBX = $null
         try {
             $MBX = Get-Mailbox -Identity $UserName
