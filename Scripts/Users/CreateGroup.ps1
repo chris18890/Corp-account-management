@@ -47,7 +47,7 @@ function Create-ADGroup {
         Write-Host "'$GroupName' already exists" -ForegroundColor Green
     }
     if ($O365 -eq "E" -or $O365 -eq "H") {
-        Enable-DistributionGroup -Identity $GroupName -DomainController $DCHostName -Description $GroupDescription
+        Enable-DistributionGroup -Identity $GroupName -DomainController $DCHostName
         Set-DistributionGroup -Identity $GroupName -RequireSenderAuthenticationEnabled $true -DomainController $DCHostName
     }
 }
