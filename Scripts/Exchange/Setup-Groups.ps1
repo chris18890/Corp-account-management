@@ -117,7 +117,7 @@ $EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName
 $StaffGroup = "Staff"
 $ITGroup = "IT"
 $ITAdminGroup = "IT_Admin"
-$Groups = @($StaffGroup, $ITGroup, $ITAdminGroup)
+$Groups = @($StaffGroup, $ITGroup, $ITAdminGroup, "UG_Office365")
 $ExServer = "$Domain-Exch.$DNSSuffix" #Remote Exchange PS session
 $DCHostName = (Get-ADDomainController).HostName # Use this DC for all create/update operations, otherwise aspects may fail due to replication/timing issues
 Add-GroupMember -Group "Organization Management" -Member "Domain Admins"

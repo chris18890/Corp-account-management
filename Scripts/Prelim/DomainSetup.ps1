@@ -163,6 +163,7 @@ Create-ADOU -OUName $StaffGroup -Path $EndPath -OUDescription "Top level OU for 
 Create-ADOU -OUName "Groups" -Path $EndPath -OUDescription "Top level OU for Group objects"
 Create-ADGroup -GroupName $StaffGroup -Path "OU=$GroupsOU,$EndPath" -GroupDescription "Org-wide group for all users"
 Create-ADGroup -GroupName $ITGroup -Path "OU=$GroupsOU,$EndPath" -GroupDescription "Departmental group holding all IT accounts"
+Create-ADGroup -GroupName "UG_Office365" -Path "OU=$GroupsOU,$EndPath" -GroupDescription "Used to assign Office365 licenses"
 Create-ADOU -OUName $ITGroup -Path $EndPath -OUDescription "Top level OU for IT User & Group objects"
 Create-ADOU -OUName "Shared_Mailbox_Access" -Path "OU=$GroupsOU,$EndPath" -OUDescription "IT OU for Group objects that grant access to shared mailboxes"
 Create-ADOU -OUName "Equipment_Mailbox_Access" -Path "OU=$GroupsOU,$EndPath" -OUDescription "IT OU for Group objects that grant access to equipment mailboxes"
