@@ -16,6 +16,13 @@ param(
 $Domain = "$env:userdomain"
 $EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName
 $DNSSuffix = (Get-ADDomain -Identity $Domain).DNSRoot
+$O365 = $O365.ToUpper()
+if ($O365 -eq "H") {
+    if (!$O365EmailSuffix) {
+        $O365EmailSuffix = READ-HOST 'Enter "onmicrosoft.com" domain - '
+        $O365EmailSuffix = "$O365EmailSuffix.onmicrosoft.com"
+    }
+}
 # ADConnect & Exchange settings
 if (!$DCHostName) {
     $DCHostName = (Get-ADDomainController).HostName # Use this DC for all create/update operations, otherwise aspects may fail due to replication/timing issues
@@ -30,8 +37,24 @@ $OU = "IT"
 $SubOU = "Hi_Priv_Accounts"
 $ITAdminGroup = "IT_Admin"
 $OUPath = "OU=$SubOU,OU=$OU,$EndPath"
+if (!$UserPassword) {
+    $UserPassword = READ-HOST 'Enter a password for the new account - '
+}
+if (!$PrivLevel) {
+    $PrivLevel = READ-HOST 'Enter a Privilege Level for the new account (1-3) - '
+}
+if (!$Company) {
+    $Company = $Domain
+}
+if (!$Dept) {
+    $Dept = "IT"
+}
 # File locations
 $LogPath = "$ScriptPath\LogFiles"
+if (!(TEST-PATH $LogPath)) {
+    Write-Log "Creating log folder"
+    New-Item "$LogPath" -type directory -force
+}
 #====================================================================
 
 #====================================================================
@@ -424,29 +447,6 @@ function Add-GroupMember {
 }
 #====================================================================
 
-if (!$UserPassword) {
-    $UserPassword = READ-HOST 'Enter a password for the new account - '
-}
-if (!$PrivLevel) {
-    $PrivLevel = READ-HOST 'Enter a Privilege Level for the new account (1-3) - '
-}
-if (!$Company) {
-    $Company = $Domain
-}
-if (!$Dept) {
-    $Dept = "IT"
-}
-$O365 = $O365.ToUpper()
-if ($O365 -eq "H") {
-    if (!$O365EmailSuffix) {
-        $O365EmailSuffix = READ-HOST 'Enter "onmicrosoft.com" domain - '
-        $O365EmailSuffix = "$O365EmailSuffix.onmicrosoft.com"
-    }
-}
-if (!(TEST-PATH $LogPath)) {
-    Write-Log "Creating log folder"
-    New-Item "$LogPath" -type directory -force
-}
 if (!$LogFile) {
     $LogFileName = $Domain + "_new_Hi-Priv_user_log-$(Get-Date -Format 'yyyyMMdd')"
     $LogIndex = 0

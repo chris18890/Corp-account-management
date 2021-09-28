@@ -6,6 +6,16 @@ param(
 $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ScriptTitle = "$Domain User Sync Script"
 $LogPath = "$ScriptPath\LogFiles"
+if (!(TEST-PATH $LogPath)) {
+    Write-Log "Creating log folder"
+    New-Item "$LogPath" -type directory -force
+}
+$LogFileName = $Domain + "_new_user_cleanup_log-$(Get-Date -Format 'yyyyMMdd')"
+$LogIndex = 0
+while (Test-Path "$LogPath\$($LogFileName)_$LogIndex.log") {
+    $LogIndex ++
+}
+$LogFile = "$LogPath\$($LogFileName)_$LogIndex.log"
 $Roles = @("Company Administrator")
 $Level1Roles = @("Helpdesk Administrator", "Service support administrator", "Global Reader")
 $Level2Roles = @("User Administrator", "Groups administrator", "Authentication administrator", "License Administrator")
@@ -35,16 +45,6 @@ function Write-Log {
 }
 #====================================================================
 
-if (!(TEST-PATH $LogPath)) {
-    Write-Log "Creating log folder"
-    New-Item "$LogPath" -type directory -force
-}
-$LogFileName = $Domain + "_new_user_cleanup_log-$(Get-Date -Format 'yyyyMMdd')"
-$LogIndex = 0
-while (Test-Path "$LogPath\$($LogFileName)_$LogIndex.log") {
-    $LogIndex ++
-}
-$LogFile = "$LogPath\$($LogFileName)_$LogIndex.log"
 Write-Log ("=" * 80)
 Write-Log "Log file is '$LogFile'"
 Write-Log "Processing commenced, running as user '$Domain\$env:USERNAME'"

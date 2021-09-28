@@ -10,6 +10,11 @@ param(
 $Domain = "$env:userdomain"
 $EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName
 $DNSSuffix = (Get-ADDomain -Identity $Domain).DNSRoot
+$O365 = $O365.ToUpper()
+if ($O365 -eq "H") {
+    $O365EmailSuffix = READ-HOST 'Enter "onmicrosoft.com" domain - '
+    $O365EmailSuffix = "$O365EmailSuffix.onmicrosoft.com"
+}
 # Group settings
 $GroupsOU = "Groups"
 $GroupCategory = "Security"
@@ -28,9 +33,24 @@ $AzureADConnect = "$Domain-RTR.$DNSSuffix"
 $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 # Set variables
 $ScriptTitle = "$Domain User Creation Script"
+$UserPassword = READ-HOST 'Enter a password for the new account - '
 $EnabledMailboxes = @() # Array to Store Completed Mailbox requests for later enumeration
+$Roles = @("Company Administrator")
+$Level1Roles = @("Helpdesk Administrator", "Service support administrator", "Global Reader")
+$Level2Roles = @("User Administrator", "Groups administrator", "Authentication administrator", "License Administrator")
+$Level3Roles = @("Exchange Administrator", "Teams Administrator", "Sharepoint Administrator", "Privileged authentication administrator")
 # File locations
 $LogPath = "$ScriptPath\LogFiles"
+if (!(TEST-PATH $LogPath)) {
+    Write-Log "Creating log folder"
+    New-Item "$LogPath" -type directory -force
+}
+$LogFileName = $Domain + "_new_user_log-$(Get-Date -Format 'yyyyMMdd')"
+$LogIndex = 0
+while (Test-Path "$LogPath\$($LogFileName)_$LogIndex.log") {
+    $LogIndex ++
+}
+$LogFile = "$LogPath\$($LogFileName)_$LogIndex.log"
 #====================================================================
 
 #====================================================================
@@ -712,26 +732,6 @@ function Add-GroupMember {
 #====================================================================
 
 $OU = "Staff"
-$UserPassword = READ-HOST 'Enter a password for the new account - '
-$O365 = $O365.ToUpper()
-if ($O365 -eq "H") {
-    $O365EmailSuffix = READ-HOST 'Enter "onmicrosoft.com" domain - '
-    $O365EmailSuffix = "$O365EmailSuffix.onmicrosoft.com"
-}
-$Roles = @("Company Administrator")
-$Level1Roles = @("Helpdesk Administrator", "Service support administrator", "Global Reader")
-$Level2Roles = @("User Administrator", "Groups administrator", "Authentication administrator", "License Administrator")
-$Level3Roles = @("Exchange Administrator", "Teams Administrator", "Sharepoint Administrator", "Privileged authentication administrator")
-if (!(TEST-PATH $LogPath)) {
-    Write-Log "Creating log folder"
-    New-Item "$LogPath" -type directory -force
-}
-$LogFileName = $Domain + "_new_user_log-$(Get-Date -Format 'yyyyMMdd')"
-$LogIndex = 0
-while (Test-Path "$LogPath\$($LogFileName)_$LogIndex.log") {
-    $LogIndex ++
-}
-$LogFile = "$LogPath\$($LogFileName)_$LogIndex.log"
 Write-Log ("=" * 80)
 Write-Log "Log file is '$LogFile'"
 Write-Log "Processing commenced, running as user '$Domain\$env:USERNAME'"
