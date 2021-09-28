@@ -411,9 +411,6 @@ function Create-Mailbox-Hybrid {
                 Write-Log "ERROR: Error creating Exchange mailbox for $UserName - mailbox may not have been created correctly" -ForegroundColor Red
             } else {
                 Write-Log "Mailbox created for $UserName successfully"
-                Write-Log "Creating UserName based Office365 address for $UserName"
-                #Set $UserName based Office365 address
-                Set-RemoteMailbox -Identity $UserName -EmailAddresses @{add="$UserName@$O365EmailSuffix"} -DomainController $DCHostName
                 $EnabledMailbox = New-Object -Property @{"Alias" = ""; "SharedEquipmentRoom" = ""; "Capacity" =  ""} -TypeName PSObject
                 $EnabledMailbox.alias = $alias
                 $EnabledMailbox.SharedEquipmentRoom = $SharedEquipmentRoom
