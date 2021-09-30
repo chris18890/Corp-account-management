@@ -206,8 +206,8 @@ function Update-Mailbox-OnPrem {
                     "S" {
                         Write-Log "Updating Shared Mailbox $UserName : Adding Permissions"
                         $GroupName = "sh_$UserName"
-                        Add-MailboxPermission $UserName -User $GroupName -AccessRights FullAccess -confirm:$false -DomainController $DCHostName
-                        Add-ADPermission $UserName -User $GroupName -ExtendedRights "Send As" -confirm:$false -DomainController $DCHostName
+                        Add-MailboxPermission -Identity $UserName -User $GroupName -AccessRights FullAccess -confirm:$false -DomainController $DCHostName
+                        Add-ADPermission -Identity $UserName -User $GroupName -ExtendedRights "Send As" -confirm:$false -DomainController $DCHostName
                         Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                     }
                     "E" {

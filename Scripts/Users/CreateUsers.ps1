@@ -262,8 +262,8 @@ function Update-Mailbox-OnPrem {
                     "S" {
                         Write-Log "Updating Shared Mailbox $UserName : Adding Permissions"
                         $GroupName = "sh_$UserName"
-                        Add-MailboxPermission $UserName -User $GroupName -AccessRights FullAccess -confirm:$false -DomainController $DCHostName
-                        Add-ADPermission $UserName -User $GroupName -ExtendedRights "Send As" -confirm:$false -DomainController $DCHostName
+                        Add-MailboxPermission -Identity $UserName -User $GroupName -AccessRights FullAccess -confirm:$false -DomainController $DCHostName
+                        Add-ADPermission -Identity $UserName -User $GroupName -ExtendedRights "Send As" -confirm:$false -DomainController $DCHostName
                         Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                     }
                     "E" {
@@ -341,7 +341,6 @@ function Create-Mailbox-Hybrid {
     # Inputs:           $UserName - SAM account name of user
     #                   $realname - Real Name to set as Primary SMTP address, read from CSV
     #                   $SharedEquipmentRoom - Flag to set if mailbox is a human ID or a resouce or shared mailbox
-    #                       if shared, perform delegation operations
     #                   $Capacity - If mailbox is a room account, set the capacity
     # Calls:            Write-Log function
     # Returns:          $EnabledMailbox
@@ -448,7 +447,6 @@ function Update-Mailbox-Hybrid {
     # Inputs:           $UserName - SAM account name of user
     #                   $realname - Real Name to set as Primary SMTP address, read from CSV
     #                   $SharedEquipmentRoom - Flag to set if mailbox is a human ID or a resouce or shared mailbox
-    #                       if shared, perform delegation operations
     #                   $Capacity - If mailbox is a room account, set the capacity
     # Calls:            Write-Log function
     # Returns:
@@ -479,8 +477,8 @@ function Update-Mailbox-Hybrid {
                     "S" {
                         Write-Log "Updating Shared Mailbox $UserName : Adding Permissions"
                         $GroupName = "sh_$UserName"
-                        Add-MailboxPermission $UserName -User $GroupName -AccessRights FullAccess -confirm:$false #-DomainController $DCHostName
-                        Add-RecipientPermission $UserName -trustee $GroupName -Accessrights "SendAs" -confirm:$false #-DomainController $DCHostName
+                        Add-MailboxPermission -Identity $UserName -User $GroupName -AccessRights FullAccess -confirm:$false #-DomainController $DCHostName
+                        Add-RecipientPermission -Identity $UserName -trustee $GroupName -Accessrights "SendAs" -confirm:$false #-DomainController $DCHostName
                         Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                     }
                     "E" {
@@ -499,8 +497,8 @@ function Update-Mailbox-Hybrid {
                         Write-Log "Updating Equipment Mailbox $UserName : Updating Calendar Processing"
                         Set-CalendarProcessing -Identity $UserName -AutomateProcessing AutoAccept -confirm:$false #-DomainController $DCHostName
                         $GroupName = "eq_$UserName"
-                        Add-MailboxPermission $UserName -User $GroupName -AccessRights FullAccess -confirm:$false #-DomainController $DCHostName
-                        Add-RecipientPermission $UserName -Trustee $GroupName -Accessrights "SendAs" -confirm:$false #-DomainController $DCHostName
+                        Add-MailboxPermission -Identity $UserName -User $GroupName -AccessRights FullAccess -confirm:$false #-DomainController $DCHostName
+                        Add-RecipientPermission -Identity $UserName -Trustee $GroupName -Accessrights "SendAs" -confirm:$false #-DomainController $DCHostName
                         Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                     }
                     "R" {
@@ -522,8 +520,8 @@ function Update-Mailbox-Hybrid {
                             Set-Mailbox -Identity $UserName -ResourceCapacity $Capacity #-DomainController $DCHostName
                         }
                         $GroupName = "ro_$UserName"
-                        Add-MailboxPermission $UserName -User $GroupName -AccessRights FullAccess -confirm:$false #-DomainController $DCHostName
-                        Add-RecipientPermission $UserName -Trustee $GroupName -Accessrights "SendAs" -confirm:$false #-DomainController $DCHostName
+                        Add-MailboxPermission -Identity $UserName -User $GroupName -AccessRights FullAccess -confirm:$false #-DomainController $DCHostName
+                        Add-RecipientPermission -Identity $UserName -Trustee $GroupName -Accessrights "SendAs" -confirm:$false #-DomainController $DCHostName
                         Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                     }
                 }
