@@ -1,2 +1,2 @@
 $Domain="$env:userdomain"
-.\Setup.exe /IAcceptExchangeServerLicenseTerms /PrepareAD /OrganizationName:"$Domain"
+.\Setup.exe /IAcceptExchangeServerLicenseTerms_DiagnosticDataON /PrepareAD /OrganizationName:"$Domain"
