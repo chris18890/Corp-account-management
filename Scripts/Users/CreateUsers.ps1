@@ -35,6 +35,8 @@ $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 # Set variables
 $ScriptTitle = "$Domain User Creation Script"
 $UserPassword = READ-HOST 'Enter a password for the new account - '
+$SMTPServer = "$Domain-EXCH.$DNSSuffix" # SMTP server used for email notifications
+$EmailFrom = "noreply@$EmailSuffix" # From address
 $EnabledMailboxes = @() # Array to Store Completed Mailbox requests for later enumeration
 $Roles = @("Company Administrator")
 $Level1Roles = @("Helpdesk Administrator", "Service support administrator", "Global Reader")
@@ -958,7 +960,7 @@ foreach ($USER in $LIST) {
                         Add-GroupMember -Group "sh_ITHELP" -Member $UserName
                         Write-Log "Creating HiPriv account for $UserName"
                         Write-Log ""
-                        .\CreateHiPrivITUser.ps1 -FirstName $FirstName -LastName $LastName -UserName $UserName -UserPassword $UserPassword -EmailSuffix $EmailSuffix -PrivLevel $PrivLevel -Dept $Dept -Company $Company -LogFile $LogFile -O365 $O365 -O365EmailSuffix $O365EmailSuffix -DCHostName $DCHostName -Manager $Manager -Requester $Requester
+                        .\CreateHiPrivITUser.ps1 -FirstName $FirstName -LastName $LastName -UserName $UserName -UserPassword $UserPassword -EmailSuffix $EmailSuffix -PrivLevel $PrivLevel -Dept $Dept -Company $Company -LogFile $LogFile -O365 $O365 -O365EmailSuffix $O365EmailSuffix -DCHostName $DCHostName -Manager $Manager -Requester $Requester -SMTPServer $SMTPServer -EmailFrom $EmailFrom
                     }
                 }
             }

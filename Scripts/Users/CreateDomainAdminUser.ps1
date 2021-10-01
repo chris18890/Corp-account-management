@@ -8,6 +8,7 @@ param(
     , [string]$O365EmailSuffix
     , [string]$LogFile,[string]$DCHostName
     , [string]$Manager,[string]$Requester
+    , [string]$SMTPServer,[string]$EmailFrom
 )
 
 #====================================================================
