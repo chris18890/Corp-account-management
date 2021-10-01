@@ -440,6 +440,71 @@ function Add-GroupMember {
 }
 #====================================================================
 
+#====================================================================
+#new user email function
+#====================================================================
+function Send-UserEmail {
+    param([string]$UserName,[string]$Password,[string]$Requester,[string]$Manager)
+    #================================================================
+    # Purpose:          To send an email to the requester and/or manager of the new account
+    # Assumptions:      Parameters have been set correctly
+    # Effects:          Email will be sent to the Requester if field is not blank
+    #                   If the manager is different from the requestor, an email
+    #                   will also be sent to the manager provided the field is not blank
+    # Inputs:           $UserName - SAM account name of user
+    #                   $Password - Password for the user account
+    #                   $Requester - Person who requested the account, from the CSV
+    #                   $Manager - User's manager, as set on the org tab of account properties
+    # Calls:            Write-Log function
+    # Returns:
+    # Notes:
+    #================================================================
+    # Send email to requester with new user's name & password
+    if ($Requester) {
+        $CheckRequester = Get-ADObject -LDAPFilter "(&(objectCategory=user)(objectClass=user)(sAMAccountName=$Requester))"
+        if ($CheckRequester) {
+            Write-Log "Sending email to requester ($Requester) for $UserName..."
+            $RequesterEmail = Get-ADUser $Requester -Properties mail | Select-Object -ExpandProperty mail
+            $UserEmail = Get-ADUser $UserName -Properties mail | Select-Object -ExpandProperty mail
+            $DisplayName = Get-ADUser $UserName -Properties DisplayName | Select-Object -ExpandProperty DisplayName
+            $Splat = @{
+                To          = $RequesterEmail
+                From        = "$ScriptTitle <$EmailFrom>"
+                Body        = "New User Created`n`nUserName is $UserName,`nEmail address is $UserEmail,`n`nPassword is $Password.`n`n`nPlease do not reply to this email, it has been sent from an unmonitored address."
+                Subject     = "New User Created - $DisplayName"
+                SmtpServer  = $SMTPServer
+                Priority    = "High"
+            }
+            Send-MailMessage @Splat
+        } else {
+            Write-Log "WARNING: Cannot send email to requester for $UserName, requester field incorrect..." -ForegroundColor Yellow
+        }
+    }# Send email to manager with new user's name & password
+    if ($Manager) {
+        $CheckManager = Get-ADObject -LDAPFilter "(&(objectCategory=user)(objectClass=user)(sAMAccountName=$Manager))"
+        if ($CheckManager) {
+            if ($Manager -ne $Requester) { # check to see if manager is the same as requester, only send email if they're different
+                Write-Log "Sending email to manager ($Manager) for $UserName..."
+                $ManagerEmail = Get-ADUser $Manager -Properties mail | Select-Object -ExpandProperty mail
+                $UserEmail = Get-ADUser $UserName -Properties mail | Select-Object -ExpandProperty mail
+                $DisplayName = Get-ADUser $UserName -Properties DisplayName | Select-Object -ExpandProperty DisplayName
+                $Splat = @{
+                    To          = $ManagerEmail
+                    From        = "$ScriptTitle <$EmailFrom>"
+                    Body        = "New User Created`n`nUserName is $UserName,`nEmail address is $UserEmail,`n`nPassword is $Password.`n`n`nPlease do not reply to this email, it has been sent from an unmonitored address."
+                    Subject     = "New User Created - $DisplayName"
+                    SmtpServer  = $SMTPServer
+                    Priority    = "High"
+                }
+                Send-MailMessage @Splat
+            }
+        } else {
+            Write-Log "WARNING: Cannot send email to manager for $UserName, manager field incorrect..." -ForegroundColor Yellow
+        }
+    }
+}
+#====================================================================
+
 if (!$LogFile) {
     $LogFileName = $Domain + "_new_Hi-Priv_user_log-$(Get-Date -Format 'yyyyMMdd')"
     $LogIndex = 0
@@ -592,12 +657,16 @@ if ($ExistingUser) {
                     Write-log $logMsg
                 }
             }
+            # Send email to requester and manager with new user's name & password
+            Send-UserEmail -UserName $UserName -password $Password -requester $Requester -manager $Manager
         }
         if ($O365 -eq "H") {
             Write-Log "Exchange mailbox for $UserName will be created in Exchange Online"
             Write-Log "Calling Create-Mailbox-Hybrid function with the following parameters:"
             Write-Log "UserName: $UserName"
             $enabledMailboxes += Create-Mailbox-Hybrid -UserName $UserName
+            # Send email to requester and manager with new user's name & password
+            Send-UserEmail -UserName $UserName -password $Password -requester $Requester -manager $Manager
         }
         Write-Log ("=" * 80)
         Write-Log "Processing for '$DisplayName' ($UserName) complete"
