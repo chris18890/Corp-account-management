@@ -6,7 +6,7 @@ param(
     , [string]$UserName,[string]$UserPassword
     , [string]$Dept,[string]$Company
     , [string]$O365EmailSuffix
-    , [string]$LogFile,[string]$Server
+    , [string]$LogFile,[string]$DCHostName
 )
 
 #====================================================================
