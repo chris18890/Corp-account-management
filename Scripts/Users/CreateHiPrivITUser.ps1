@@ -7,7 +7,7 @@ param(
     , [string]$Dept,[string]$Company
     , [string]$O365EmailSuffix
     , [string]$LogFile,[string]$DCHostName
-    , [string]$Manager
+    , [string]$Manager,[string]$Requester
     , [string]$PrivLevel
 )
 
@@ -566,7 +566,7 @@ if ($ExistingUser) {
         if ($PrivLevel -ge "3") {
             Write-Log "Creating Domain Admin account for $UserName"
             Write-Log ""
-            .\CreateDomainAdminUser.ps1 -FirstName $FirstName -LastName $LastName -UserName $UserName -UserPassword $UserPassword -EmailSuffix $EmailSuffix -Dept $Dept -Company $Company -LogFile $LogFile -O365 $O365 -O365EmailSuffix $O365EmailSuffix -DCHostName $DCHostName -Manager $Manager
+            .\CreateDomainAdminUser.ps1 -FirstName $FirstName -LastName $LastName -UserName $UserName -UserPassword $UserPassword -EmailSuffix $EmailSuffix -Dept $Dept -Company $Company -LogFile $LogFile -O365 $O365 -O365EmailSuffix $O365EmailSuffix -DCHostName $DCHostName -Manager $Manager -Requester $Requester
         }
         if ($O365 -eq "E") {
             Write-Log "Exchange mailbox for $UserName will be created in Exchange OnPrem"
