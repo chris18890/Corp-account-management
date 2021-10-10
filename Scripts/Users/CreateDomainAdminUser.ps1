@@ -585,7 +585,6 @@ if (!$UserName) {
 }
 $DisplayName = "$LastName, $FirstName (Domain Admin)"
 $EmailAddress = "$UserName@$EmailSuffix"
-$PASSWORD = "$UserPassword"
 $HomeDrive = "H:"
 $HomeDir = "\\$Domain\Profiles\$UserName"
 $UserPrincipalName = "$UserName@$EmailSuffix"
@@ -605,7 +604,7 @@ if ($ExistingUser) {
         Write-Log ("=" * 80)
         $Params = @{
             Name                    = $UserName
-            AccountPassword         = ConvertTo-SecureString -AsPlainText $PASSWORD -Force
+            AccountPassword         = ConvertTo-SecureString -AsPlainText $UserPassword -Force
             ChangePasswordAtLogon   = $false
             Company                 = $Company
             Department              = $Dept

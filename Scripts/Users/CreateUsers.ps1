@@ -901,7 +901,6 @@ foreach ($USER in $LIST) {
     } else {
         $EmailAddress = "$FirstName.$LastName@$EmailSuffix"
     }
-    $PASSWORD = "$UserPassword"
     $HomeDrive = "H:"
     $HomeDir = "\\$Domain\Profiles\$UserName"
     $UserPrincipalName = "$UserName@$EmailSuffix"
@@ -920,7 +919,7 @@ foreach ($USER in $LIST) {
             Write-Log ("=" * 80)
             $Params = @{
                 Name                    = $UserName
-                AccountPassword         = ConvertTo-SecureString -AsPlainText $PASSWORD -Force
+                AccountPassword         = ConvertTo-SecureString -AsPlainText $UserPassword -Force
                 ChangePasswordAtLogon   = $true
                 Description             = $Description
                 Company                 = $Company
