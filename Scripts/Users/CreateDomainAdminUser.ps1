@@ -3,7 +3,7 @@ param(
     [Parameter(Mandatory)][string]$O365
     , [Parameter(Mandatory)][string]$EmailSuffix
     , [string]$FirstName,[string]$LastName
-    , [string]$UserName,[string]$UserPassword
+    , [string]$UserName,[string]$UserPassword,[string]$PasswordLength
     , [string]$Dept,[string]$Company
     , [string]$O365EmailSuffix
     , [string]$LogFile,[string]$DCHostName
@@ -41,6 +41,9 @@ $OUPath = "OU=$SubOU,OU=$OU,$EndPath"
 if (!$UserPassword) {
     $UserPassword = READ-HOST 'Enter a password for the new account - '
 }
+if (!$PasswordLength) {
+    $PasswordLength = 4 # Number of characters per password group
+}
 if (!$Company) {
     $Company = $Domain
 }
@@ -76,6 +79,32 @@ function Write-Log {
     } else {
         Write-Host $LogString
     }
+}
+#====================================================================
+
+#====================================================================
+#Generate a random password-legal string
+#====================================================================
+function Create-Password {
+    param([string]$PasswordLength)
+    #================================================================
+    # Purpose:          Validate password against password policy
+    # Assumptions:      Group length has been set and is greater than 3
+    # Effects:          Valid password generated
+    # Inputs:           $Length - number of characters for each group
+    # Calls:            Write-Log function
+    # Returns:
+    # Notes:            There are 4 requirements in the current policy, but this could change in future
+    #================================================================
+    Write-Log "Generating random password"
+    $digits = 48..57
+    $lettersLower = 97..122
+    $lettersUpper = 65..90
+    $passwordLower = get-random -count $PasswordLength -input $lettersLower | % -begin { $aa = $null } -process {$aa += [char]$_} -end {$aa}
+    $passwordUpper = get-random -count $PasswordLength -input $lettersUpper | % -begin { $aa = $null } -process {$aa += [char]$_} -end {$aa}
+    $passwordDigits = get-random -count $PasswordLength -input $digits | % -begin { $aa = $null } -process {$aa += [char]$_} -end {$aa}
+    return $passwordLower + $passwordDigits + $passwordUpper
+    Write-Log "Generated random password"
 }
 #====================================================================
 
