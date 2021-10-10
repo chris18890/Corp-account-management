@@ -39,9 +39,6 @@ $OU = "IT"
 $SubOU = "Hi_Priv_Accounts"
 $ITAdminGroup = "IT_Admin"
 $OUPath = "OU=$SubOU,OU=$OU,$EndPath"
-if (!$UserPassword) {
-    $UserPassword = READ-HOST 'Enter a password for the new account - '
-}
 if (!$PasswordLength) {
     $PasswordLength = 4 # Number of characters per password group
 }
@@ -549,8 +546,12 @@ if (!$LogFile) {
     Write-Log "Errors and warnings will be displayed below. See the log file '$LogFile' for further details of these"
     Write-Log ("=" * 80)
     Write-Log ""
-    #Validate Password against Password Policy
-    Validate-Password -Password $UserPassword
+    #Generate Password if one hasn't been passed as a param
+    if (!$UserPassword) {
+        $UserPassword = Create-Password -PasswordLength $PasswordLength
+        #Validate Password against Password Policy
+        Validate-Password -Password $UserPassword
+    }
     if ($O365 -eq "E" -or $O365 -eq "H") {
         # Get user credentials for server connectivity (Non-MFA)
         try {

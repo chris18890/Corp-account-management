@@ -34,7 +34,6 @@ $AzureADConnect = "$Domain-RTR.$DNSSuffix"
 $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 # Set variables
 $ScriptTitle = "$Domain User Creation Script"
-$UserPassword = READ-HOST 'Enter a password for the new account - '
 $SMTPServer = "$Domain-EXCH.$DNSSuffix" # SMTP server used for email notifications
 $EmailFrom = "noreply@$EmailSuffix" # From address
 $PasswordLength = 4 # Number of characters per password group
@@ -869,8 +868,6 @@ if ($O365 -eq "E" -or $O365 -eq "H") {
     }
 }
 #====================================================================
-#Validate Password against Password Policy
-Validate-Password -Password $UserPassword
 
 #====================================================================
 #Loop through CSV & create users
@@ -944,6 +941,10 @@ foreach ($USER in $LIST) {
             Write-Log ("=" * 80)
             Write-Log "Processing input file record for '$DisplayName' ($UserName)..."
             Write-Log ("=" * 80)
+            #Generate random password
+            $UserPassword = Create-Password -PasswordLength $PasswordLength
+            #Validate Password against Password Policy
+            Validate-Password -Password $UserPassword
             $Params = @{
                 Name                    = $UserName
                 AccountPassword         = ConvertTo-SecureString -AsPlainText $UserPassword -Force
