@@ -223,7 +223,7 @@ function Create-Mailbox-OnPrem {
                 Write-Log "ERROR: Error creating Exchange mailbox for $UserName - mailbox may not have been created correctly" -ForegroundColor Red
             } else {
                 Write-Log "Mailbox created for $UserName successfully"
-                $EnabledMailbox = New-Object -Property @{"Alias" = ""; "SharedEquipmentRoom" = ""; "Capacity" =  ""} -TypeName PSObject
+                $EnabledMailbox = New-Object -Property @{"Alias" = ""; "SharedEquipmentRoom" = ""; "Capacity" = ""} -TypeName PSObject
                 $EnabledMailbox.alias = $alias
                 $EnabledMailbox.SharedEquipmentRoom = $SharedEquipmentRoom
                 $EnabledMailbox.Capacity = $Capacity
@@ -438,7 +438,7 @@ function Create-Mailbox-Hybrid {
                 Write-Log "ERROR: Error creating Exchange mailbox for $UserName - mailbox may not have been created correctly" -ForegroundColor Red
             } else {
                 Write-Log "Mailbox created for $UserName successfully"
-                $EnabledMailbox = New-Object -Property @{"Alias" = ""; "SharedEquipmentRoom" = ""; "Capacity" =  ""} -TypeName PSObject
+                $EnabledMailbox = New-Object -Property @{"Alias" = ""; "SharedEquipmentRoom" = ""; "Capacity" = ""} -TypeName PSObject
                 $EnabledMailbox.alias = $alias
                 $EnabledMailbox.SharedEquipmentRoom = $SharedEquipmentRoom
                 $EnabledMailbox.Capacity = $Capacity
