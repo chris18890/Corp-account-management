@@ -423,6 +423,8 @@ try {
 }
 Import-GPO -BackupGpoName "Logon Policy" -TargetName "Logon Policy" -path $GPOLocation -CreateIfNeeded
 Link-GPO -GPOName "Logon Policy" -GPOTarget "$EndPath"
+Import-GPO -BackupGpoName "TLS" -TargetName "TLS" -path $GPOLocation -CreateIfNeeded
+Link-GPO -GPOName "TLS" -GPOTarget "$EndPath"
 Import-GPO -BackupGpoName "RG_Server_Admins as members of Local admins" -TargetName "RG_Server_Admins as members of Local admins" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
 Link-GPO -GPOName "RG_Server_Admins as members of Local admins" -GPOTarget "$Location"
 Import-GPO -BackupGpoName "RG_Desktop_Admins as members of Local admins" -TargetName "RG_Desktop_Admins as members of Local admins" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
