@@ -1193,23 +1193,6 @@ if ($O365 -eq "H") {
             Write-Log $Action
         }
     }
-    if ($connected -eq $false) {
-        try {
-            $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell-liveid/ -Credential $Cred -Authentication Basic -AllowRedirection
-            Import-PSSession $Session -AllowClobber -DisableNameChecking
-            Write-Log "Connected to Exchange Online session."
-            $Connected = $true
-        } catch {
-            $e = $_.Exception
-            Write-Log $e
-            $line = $_.InvocationInfo.ScriptLineNumber
-            Write-Log $line
-            $msg = $e.Message
-            Write-Log $msg
-            $Action = "Failed to connect via Direct PSSession"
-            Write-Log $Action
-        }
-    }
     if ($connected -eq $true) {
         Write-log "Updating Mailboxes"
         $LastTry = $True
