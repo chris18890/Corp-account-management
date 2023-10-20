@@ -390,7 +390,7 @@ if (!$ExSession) {
 #====================================================================
 #Loop through CSV & create users
 #====================================================================
-$LIST = @(IMPORT-CSV users.csv)
+$LIST = @(IMPORT-CSV "users.csv")
 $CreatedUsers = @()
 foreach ($USER in $LIST) {
     $UserName = $USER.USERNAME

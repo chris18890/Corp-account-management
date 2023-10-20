@@ -57,7 +57,7 @@ Write-Log ""
 #====================================================================
 #Loop through CSV & create users
 #====================================================================
-$CreatedUsers = @(IMPORT-CSV users.csv)
+$CreatedUsers = @(IMPORT-CSV "users.csv")
 try {
     if (!(Get-Module -ListAvailable -Name MSOnline)) {
         Write-Log "Installing MSOnline module"

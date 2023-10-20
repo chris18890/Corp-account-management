@@ -875,7 +875,7 @@ if ($O365 -eq "E" -or $O365 -eq "H") {
 #====================================================================
 #Loop through CSV & create users
 #====================================================================
-$LIST = @(IMPORT-CSV users.csv)
+$LIST = @(IMPORT-CSV "users.csv")
 $CreatedUsers = @()
 foreach ($USER in $LIST) {
     $Membership = "$UsersOU"
