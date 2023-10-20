@@ -3,6 +3,9 @@ param(
     [Parameter(Mandatory)][string]$EmailSuffix
 )
 
+$Domain = "$env:userdomain"
+$EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName
+$DNSSuffix = (Get-ADDomain -Identity $Domain).DNSRoot
 $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ScriptTitle = "$Domain User Sync Script"
 $LogPath = "$ScriptPath\LogFiles"
