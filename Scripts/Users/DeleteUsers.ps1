@@ -1,11 +1,10 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][string]$O365
+    [Parameter(Mandatory)][switch]$O365
 )
 $Domain = "$env:userdomain"
 $EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName
 $DNSSuffix = (Get-ADDomain -Identity $Domain).DNSRoot
-$O365 = $O365.ToUpper()
 # windows GUI components
 function Read-MultiLineInputBoxDialog([string]$Message, [string]$WindowTitle, [string]$DefaultText) {
 <#
@@ -249,7 +248,7 @@ foreach ($UserName in $UserNames -split '\s+') {
     }
     Write-Host "-----------------------"
 }   # foreach id
-if ($O365 -eq "Y") {
+if ($O365) {
     Write-Host ""
     Write-Host "Starting AzureAD Sync"
     Import-Module ADSync
