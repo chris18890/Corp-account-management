@@ -89,10 +89,10 @@ try {
         $Capacity = $USER.Cap
         $UserPrincipalName = "$UserName@$EmailSuffix"
         $MBX = $null
-        $MBX = Get-Mailbox -Identity $UserName
+        $MBX = Get-Mailbox -Identity $UserPrincipalName
         $i = 0
         while (!($MBX) -and ($i -le 6)) {
-            $MBX = Get-Mailbox -Identity $UserName -erroraction silentlycontinue
+            $MBX = Get-Mailbox -Identity $UserPrincipalName -erroraction silentlycontinue
             $i++
             Start-Sleep -seconds 10
         }
@@ -100,57 +100,57 @@ try {
             Write-Log ""
             Write-Log "Assigning region for $UserName"
             Set-MsolUser -UserPrincipalName $UserPrincipalName -UsageLocation GB
-            Set-MailboxSpellingConfiguration -Identity $UserName -DictionaryLanguage EnglishUnitedKingdom
-            Set-MailboxRegionalConfiguration -Identity $UserName -Language en-GB -DateFormat "dd/MM/yyyy" -TimeFormat "HH:mm" -TimeZone "GMT Standard Time"
-            $identityStr = $UserName + ":\Calendar"
+            Set-MailboxSpellingConfiguration -Identity $UserPrincipalName -DictionaryLanguage EnglishUnitedKingdom
+            Set-MailboxRegionalConfiguration -Identity $UserPrincipalName -Language en-GB -DateFormat "dd/MM/yyyy" -TimeFormat "HH:mm" -TimeZone "GMT Standard Time"
+            $identityStr = $UserPrincipalName + ":\Calendar"
             Set-MailboxFolderPermission -Identity $identityStr -User Default -AccessRights Reviewer
             switch ($SharedEquipmentRoom) {
                 "S" {
                     Write-Log "Updating Shared Mailbox $UserName : Adding Permissions"
                     $GroupName = "sh_$UserName"
-                    Add-MailboxPermission -Identity $UserName -User $GroupName -AccessRights FullAccess -InheritanceType All -confirm:$false
-                    Add-RecipientPermission -Identity $UserName -Trustee $GroupName -AccessRights SendAs -confirm:$false
+                    Add-MailboxPermission -Identity $UserPrincipalName -User $GroupName -AccessRights FullAccess -InheritanceType All -confirm:$false
+                    Add-RecipientPermission -Identity $UserPrincipalName -Trustee $GroupName -AccessRights SendAs -confirm:$false
                     Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                 }
                 "E" {
                     #Set Default calendar permissions to Author
-                    $MBXType = (Get-Mailbox -Identity $UserName).RecipientTypeDetails
+                    $MBXType = (Get-Mailbox -Identity $UserPrincipalName).RecipientTypeDetails
                     $x = 0
                     While ($MBXType -ne "EquipmentMailbox" -and $x -lt 6) {
                         Start-Sleep -Seconds 10
-                        $MBXType = (Get-Mailbox -Identity $UserName).RecipientTypeDetails
+                        $MBXType = (Get-Mailbox -Identity $UserPrincipalName).RecipientTypeDetails
                         $x++
                     }
-                    $identityStr = $UserName + ":\Calendar"
+                    $identityStr = $UserPrincipalName + ":\Calendar"
                     Set-MailboxFolderPermission -Identity $identityStr -User Default -AccessRights Author -confirm:$false
                     #Set calendar resource attendant to auto-accept
-                    Set-CalendarProcessing -Identity $UserName -AutomateProcessing AutoAccept -confirm:$false
+                    Set-CalendarProcessing -Identity $UserPrincipalName -AutomateProcessing AutoAccept -confirm:$false
                     Write-Log "Updating Equipment Mailbox $UserName : Adding Permissions"
                     $GroupName = "eq_$UserName"
-                    Add-MailboxPermission -Identity $UserName -User $GroupName -AccessRights FullAccess -confirm:$false
-                    Add-RecipientPermission -Identity $UserName -Trustee $GroupName -Accessrights "SendAs" -confirm:$false
+                    Add-MailboxPermission -Identity $UserPrincipalName -User $GroupName -AccessRights FullAccess -confirm:$false
+                    Add-RecipientPermission -Identity $UserPrincipalName -Trustee $GroupName -Accessrights "SendAs" -confirm:$false
                     Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                 }
                 "R" {
                     #Set Default calendar permissions to Author
-                    $MBXType = (Get-Mailbox -Identity $UserName).RecipientTypeDetails
+                    $MBXType = (Get-Mailbox -Identity $UserPrincipalName).RecipientTypeDetails
                     $x = 0
                     While ($MBXType -ne "RoomMailbox" -and $x -lt 6) {
                         Start-Sleep -Seconds 10
-                        $MBXType = (Get-Mailbox -Identity $UserName).RecipientTypeDetails
+                        $MBXType = (Get-Mailbox -Identity $UserPrincipalName).RecipientTypeDetails
                         $x++
                     }
-                    $identityStr = $UserName + ":\Calendar"
+                    $identityStr = $UserPrincipalName + ":\Calendar"
                     Set-MailboxFolderPermission -Identity $identityStr -User Default -AccessRights Author -confirm:$false
                     #Set calendar resource attendant to auto-accept
-                    Set-CalendarProcessing -Identity $UserName -AutomateProcessing AutoAccept -confirm:$false
+                    Set-CalendarProcessing -Identity $UserPrincipalName -AutomateProcessing AutoAccept -confirm:$false
                     if ($Capacity -ne "N") {
-                        Set-Mailbox -Identity $UserName -ResourceCapacity $Capacity
+                        Set-Mailbox -Identity $UserPrincipalName -ResourceCapacity $Capacity
                     }
                     Write-Log "Updating Room Mailbox $UserName : Adding Permissions"
                     $GroupName = "ro_$UserName"
-                    Add-MailboxPermission -Identity $UserName -User $GroupName -AccessRights FullAccess -confirm:$false
-                    Add-RecipientPermission -Identity $UserName -Trustee $GroupName -Accessrights "SendAs" -confirm:$false
+                    Add-MailboxPermission -Identity $UserPrincipalName -User $GroupName -AccessRights FullAccess -confirm:$false
+                    Add-RecipientPermission -Identity $UserPrincipalName -Trustee $GroupName -Accessrights "SendAs" -confirm:$false
                     Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                 }
                 default {
