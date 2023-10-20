@@ -1142,6 +1142,10 @@ if ($O365 -eq "H") {
     $Failures = @()
     if ($connected -eq $false) {
         try {
+            if (!(Get-Module -ListAvailable -Name ExchangeOnlineManagement)) {
+                Write-Log "Installing ExchangeOnlineManagement module"
+                Install-Module -Name ExchangeOnlineManagement
+            }
             Write-log "Trying to install ExchangeOnlineManagement into current user scope"
             Import-Module -Name ExchangeOnlineManagement -Scope CurrentUser -ErrorAction SilentlyContinue
             Write-Log "EXOv2 PS Module Installed"
