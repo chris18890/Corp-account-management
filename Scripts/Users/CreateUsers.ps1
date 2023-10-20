@@ -14,7 +14,9 @@ $DNSSuffix = (Get-ADDomain -Identity $Domain).DNSRoot
 $UsersOU = "Staff"
 $O365 = $O365.ToUpper()
 if ($O365 -eq "E" -or $O365 -eq "H") {
-    $O365EmailSuffix = READ-HOST 'Enter "onmicrosoft.com" domain - '
+    if (!$O365EmailSuffix) {
+        $O365EmailSuffix = READ-HOST 'Enter "onmicrosoft.com" domain - '
+    }
     $O365EmailSuffix = "$O365EmailSuffix.onmicrosoft.com"
 }
 # Group settings
