@@ -1148,22 +1148,22 @@ if ($O365 -eq "H") {
             }
             Write-log "Trying to install ExchangeOnlineManagement into current user scope"
             Import-Module -Name ExchangeOnlineManagement -Scope CurrentUser -ErrorAction SilentlyContinue
-            Write-Log "EXOv2 PS Module Installed"
+            Write-Log "EXOv3 PS Module Installed"
         } catch {
-            Write-Log "EXOv2 PS Module Failed to Install"
+            Write-Log "EXOv3 PS Module Failed to Install"
             $e = $_.Exception
             Write-Log $e
             $line = $_.InvocationInfo.ScriptLineNumber
             Write-Log $line
             $msg = $e.Message
             Write-Log $msg
-            $Action = "EXOv2 PS Module Failed to Install"
+            $Action = "EXOv3 PS Module Failed to Install"
             Write-Log $Action
         }
         try {
             Write-log "Creating Connection to Exchange Online and importing commands"
             Connect-ExchangeOnline -UserPrincipalName $Cred.UserName
-            Write-Log "EXOv2 PS Module Imported"
+            Write-Log "EXOv3 PS Module Imported"
             Write-Log "Connecting to Office 365"
             Connect-MsolService
             Write-Log "Connected to Office 365"
