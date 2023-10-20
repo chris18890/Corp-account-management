@@ -152,7 +152,7 @@ function Create-Mailbox-OnPrem {
     ,[string]$SharedEquipmentRoom,[string]$Capacity
     )
     #================================================================
-    # Purpose:          To create an Exchange 2016 Mailbox for a user account
+    # Purpose:          To create an Exchange 2019 Mailbox for a user account
     # Assumptions:      Parameters have been set correctly
     # Effects:          Mailbox should be created for user
     # Inputs:           $UserName - SAM account name of user
@@ -367,7 +367,7 @@ function Create-Mailbox-Hybrid {
     ,[string]$SharedEquipmentRoom,[string]$Capacity
     )
     #================================================================
-    # Purpose:          To create an Exchange online Mailbox for a user account
+    # Purpose:          To create an Exchange Online Mailbox for a user account
     # Assumptions:      Parameters have been set correctly
     # Effects:          Mailbox should be created for user
     # Inputs:           $UserName - SAM account name of user
