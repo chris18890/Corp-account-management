@@ -189,7 +189,7 @@ try {
                 }
             }
         } else {
-            $logmsg = "Mailbox:" + $UserName +" not found in AzureAD"
+            $logmsg = "Mailbox: " + $UserName +" not found in AzureAD"
             Write-Log $logMsg
         }
     }

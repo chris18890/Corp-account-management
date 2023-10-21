@@ -1109,16 +1109,16 @@ if ($O365 -eq "E") {
         } While (!($MBX) -and $i -lt 5)
         if ($MBX) {
             if ($Mailbox.SharedEquipmentRoom) {
-                $logmsg = "Updating Mailbox:" + $Mailbox.Alias +" "+ $Mailbox.SharedEquipmentRoom +" "+ $Mailbox.Capacity +" "
+                $logmsg = "Updating Mailbox: " + $Mailbox.Alias +" "+ $Mailbox.SharedEquipmentRoom +" "+ $Mailbox.Capacity +" "
                 Write-log $logMsg
                 Update-Mailbox-OnPrem $mailbox.Alias $Mailbox.SharedEquipmentRoom $Mailbox.Capacity
             } elseif (!$Mailbox.SharedEquipmentRoom -and !$Mailbox.Capacity) {
-                $logmsg = "Updating Mailbox:" + $Mailbox.Alias
+                $logmsg = "Updating Mailbox: " + $Mailbox.Alias
                 Write-log $logMsg
                 Update-Mailbox-OnPrem $mailbox.Alias $Mailbox.SharedEquipmentRoom $Mailbox.Capacity
             }
         } else {
-            $logmsg = "Mailbox:" + $Mailbox.Alias +" not found in AD"
+            $logmsg = "Mailbox: " + $Mailbox.Alias +" not found in AD"
             Write-log $logMsg
         }
     }
@@ -1221,16 +1221,16 @@ if ($O365 -eq "H") {
             } While (!($MBX) -and $i -lt 5)
             if ($MBX) {
                 if ($Mailbox.SharedEquipmentRoom) {
-                    $logmsg = "Updating Mailbox:" + $Mailbox.Alias +" "+ $Mailbox.SharedEquipmentRoom +" "+ $Mailbox.Capacity +" "+ $Mailbox.AdminID
+                    $logmsg = "Updating Mailbox: " + $Mailbox.Alias +" "+ $Mailbox.SharedEquipmentRoom +" "+ $Mailbox.Capacity +" "+ $Mailbox.AdminID
                     Write-log $logMsg
                     Update-Mailbox-Hybrid $mailbox.Alias $Mailbox.SharedEquipmentRoom $Mailbox.Capacity
                 } elseif (!$Mailbox.SharedEquipmentRoom -and !$Mailbox.Capacity) {
-                    $logmsg = "Updating Mailbox:" + $Mailbox.Alias
+                    $logmsg = "Updating Mailbox: " + $Mailbox.Alias
                     Write-log $logMsg
                     Update-Mailbox-Hybrid $mailbox.Alias $Mailbox.SharedEquipmentRoom $Mailbox.Capacity
                 }
             } else {
-                $logmsg = "Mailbox:" + $Mailbox.Alias +" not found in AzureAD"
+                $logmsg = "Mailbox: " + $Mailbox.Alias +" not found in AzureAD"
                 $Failures += $Mailbox
                 Write-log $logMsg
             }
