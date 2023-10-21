@@ -106,6 +106,10 @@ try {
             Set-MailboxFolderPermission -Identity $identityStr -User Default -AccessRights Reviewer
             switch ($SharedEquipmentRoom) {
                 "S" {
+                    if ($MBX.RecipientTypeDetails -ne "SharedMailbox") {
+                        Write-Log "Converting $UserName Mailbox to shared type"
+                        Set-Mailbox -Identity $UserPrincipalName -type:shared
+                    }
                     Write-Log "Updating Shared Mailbox $UserName : Adding Permissions"
                     $GroupName = "sh_$UserName"
                     Add-MailboxPermission -Identity $UserPrincipalName -User $GroupName -AccessRights FullAccess -InheritanceType All -confirm:$false
@@ -113,6 +117,10 @@ try {
                     Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                 }
                 "E" {
+                    if ($MBX.RecipientTypeDetails -ne "EquipmentMailbox") {
+                        Write-Log "Converting $UserName Mailbox to equipment type"
+                        Set-Mailbox -Identity $UserPrincipalName -type:equipment
+                    }
                     #Set Default calendar permissions to Author
                     $MBXType = (Get-Mailbox -Identity $UserPrincipalName).RecipientTypeDetails
                     $x = 0
@@ -132,6 +140,10 @@ try {
                     Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                 }
                 "R" {
+                    if ($MBX.RecipientTypeDetails -ne "RoomMailbox") {
+                        Write-Log "Converting $UserName Mailbox to room type"
+                        Set-Mailbox -Identity $UserPrincipalName -type:room
+                    }
                     #Set Default calendar permissions to Author
                     $MBXType = (Get-Mailbox -Identity $UserPrincipalName).RecipientTypeDetails
                     $x = 0

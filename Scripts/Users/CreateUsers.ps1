@@ -507,6 +507,10 @@ function Update-Mailbox-Hybrid {
                 #Set shared account settings
                 Switch ($SharedEquipmentRoom) {
                     "S" {
+                        if ($MBX.RecipientTypeDetails -ne "SharedMailbox") {
+                            Write-Log "Converting $UserName Mailbox to shared type"
+                            Set-Mailbox -Identity $UserName -type:shared
+                        }
                         Write-Log "Updating Shared Mailbox $UserName : Adding Permissions"
                         $GroupName = "sh_$UserName"
                         Add-MailboxPermission -Identity $UserName -User $GroupName -AccessRights FullAccess -confirm:$false #-DomainController $DCHostName
@@ -514,6 +518,10 @@ function Update-Mailbox-Hybrid {
                         Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                     }
                     "E" {
+                        if ($MBX.RecipientTypeDetails -ne "EquipmentMailbox") {
+                            Write-Log "Converting $UserName Mailbox to equipment type"
+                            Set-Mailbox -Identity $UserName -type:equipment
+                        }
                         Write-Log "Updating Equipment Mailbox $UserName : Adding Permissions"
                         #Set Default calendar permissions to Author
                         $MBXType = (Get-Mailbox -Identity $UserName).RecipientTypeDetails
@@ -534,6 +542,10 @@ function Update-Mailbox-Hybrid {
                         Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
                     }
                     "R" {
+                        if ($MBX.RecipientTypeDetails -ne "RoomMailbox") {
+                            Write-Log "Converting $UserName Mailbox to room type"
+                            Set-Mailbox -Identity $UserName -type:room
+                        }
                         Write-Log "Updating Room Mailbox $UserName : Adding Permissions"
                         #Set Default calendar permissions to Author
                         $MBXType = (Get-Mailbox -Identity $UserName).RecipientTypeDetails
