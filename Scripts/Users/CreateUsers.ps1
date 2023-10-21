@@ -1150,7 +1150,7 @@ if ($O365 -eq "H") {
                 Write-Log "Installing ExchangeOnlineManagement module"
                 Install-Module -Name ExchangeOnlineManagement
             }
-            Write-log "Trying to install ExchangeOnlineManagement into current user scope"
+            Write-log "Trying to install ExchangeOnlineManagement"
             Import-Module -Name ExchangeOnlineManagement -ErrorAction SilentlyContinue
             Write-Log "EXOv3 PS Module Installed"
         } catch {
