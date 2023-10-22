@@ -181,44 +181,44 @@ function Create-Mailbox-OnPrem {
                 "S" {
                     if ($realname) {
                         $action = "Enable-Mailbox -Identity $UserName -PrimarySmtpAddress $realname@$EmailSuffix -alias $alias -DomainController $DCHostName -shared"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-Mailbox -Identity $UserName -PrimarySmtpAddress "$realname@$EmailSuffix" -alias $alias -DomainController $DCHostName -shared
                     } else {
                         $action = "Enable-Mailbox -Identity $UserName -alias $alias -DomainController $DCHostName -shared"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-Mailbox -Identity $UserName -alias $alias -DomainController $DCHostName -shared
                     }
                 }
                 "E" {
                     if ($realname) {
                         $action = "Enable-Mailbox -Identity $UserName -PrimarySmtpAddress $realname@$EmailSuffix -alias $alias -DomainController $DCHostName -equipment"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-Mailbox -Identity $UserName -PrimarySmtpAddress "$realname@$EmailSuffix" -alias $alias -DomainController $DCHostName -equipment
                     } else {
                         $action = "Enable-Mailbox -Identity $UserName -alias $alias -DomainController $DCHostName -equipment"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-Mailbox -Identity $UserName -alias $alias -DomainController $DCHostName -equipment
                     }
                 }
                 "R" {
                     if ($realname) {
                         $action = "Enable-Mailbox -Identity $UserName -PrimarySmtpAddress $realname@$EmailSuffix -alias $alias -DomainController $DCHostName -room"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-Mailbox -Identity $UserName -PrimarySmtpAddress "$realname@$EmailSuffix" -alias $alias -DomainController $DCHostName -room
                     } else {
                         $action = "Enable-Mailbox -Identity $UserName -alias $alias -DomainController $DCHostName -room"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-Mailbox -Identity $UserName -alias $alias -DomainController $DCHostName -room
                     }
                 }
                 default {
                     if ($realname) {
                         $action = "Enable-Mailbox -Identity $UserName -PrimarySmtpAddress $realname@$EmailSuffix -alias $alias -DomainController $DCHostName"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-Mailbox -Identity $UserName -PrimarySmtpAddress "$realname@$EmailSuffix" -alias $alias -DomainController $DCHostName
                     } else {
                         $action = "Enable-Mailbox -Identity $UserName -alias $alias -DomainController $DCHostName"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-Mailbox -Identity $UserName -alias $alias -DomainController $DCHostName
                     }
                 }
@@ -396,44 +396,44 @@ function Create-Mailbox-Hybrid {
                 "S" {
                     if ($realname) {
                         $action = "Enable-RemoteMailbox -Identity $UserName -PrimarySmtpAddress $realname@$EmailSuffix -alias $alias -DomainController $DCHostName -remoteroutingaddress $UserName@$O365EmailSuffix -shared"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-RemoteMailbox -Identity $UserName -PrimarySmtpAddress "$realname@$EmailSuffix" -alias $alias -DomainController $DCHostName -remoteroutingaddress "$UserName@$O365EmailSuffix" -shared
                     } else {
                         $action = "Enable-RemoteMailbox -Identity $UserName -alias $alias -DomainController $DCHostName -remoteroutingaddress $UserName@$O365EmailSuffix -shared"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-RemoteMailbox -Identity $UserName -alias $alias -DomainController $DCHostName -remoteroutingaddress "$UserName@$O365EmailSuffix" -shared
                     }
                 }
                 "E" {
                     if ($realname) {
                         $action = "Enable-RemoteMailbox -Identity $UserName -PrimarySmtpAddress $realname@$EmailSuffix -alias $alias -DomainController $DCHostName -remoteroutingaddress $UserName@$O365EmailSuffix -equipment"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-RemoteMailbox -Identity $UserName -PrimarySmtpAddress "$realname@$EmailSuffix" -alias $alias -DomainController $DCHostName -remoteroutingaddress "$UserName@$O365EmailSuffix" -equipment
                     } else {
                         $action = "Enable-RemoteMailbox -Identity $UserName -alias $alias -DomainController $DCHostName -remoteroutingaddress $UserName@$O365EmailSuffix -equipment"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-RemoteMailbox -Identity $UserName -alias $alias -DomainController $DCHostName -remoteroutingaddress "$UserName@$O365EmailSuffix" -equipment
                     }
                 }
                 "R" {
                     if ($realname) {
                         $action = "Enable-RemoteMailbox -Identity $UserName -PrimarySmtpAddress $realname@$EmailSuffix -alias $alias -DomainController $DCHostName -remoteroutingaddress $UserName@$O365EmailSuffix -room"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-RemoteMailbox -Identity $UserName -PrimarySmtpAddress "$realname@$EmailSuffix" -alias $alias -DomainController $DCHostName -remoteroutingaddress "$UserName@$O365EmailSuffix" -room
                     } else {
                         $action = "Enable-RemoteMailbox -Identity $UserName -alias $alias -DomainController $DCHostName -remoteroutingaddress $UserName@$O365EmailSuffix -room"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-RemoteMailbox -Identity $UserName -alias $alias -DomainController $DCHostName -remoteroutingaddress "$UserName@$O365EmailSuffix" -room
                     }
                 }
                 default {
                     if ($realname) {
                         $action = "Enable-RemoteMailbox -Identity $UserName -PrimarySmtpAddress $realname@$EmailSuffix -alias $alias -DomainController $DCHostName -remoteroutingaddress $UserName@$O365EmailSuffix"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-RemoteMailbox -Identity $UserName -PrimarySmtpAddress "$realname@$EmailSuffix" -alias $alias -DomainController $DCHostName -remoteroutingaddress "$UserName@$O365EmailSuffix"
                     } else {
                         $action = "Enable-RemoteMailbox -Identity $UserName -alias $alias -DomainController $DCHostName -remoteroutingaddress $UserName@$O365EmailSuffix"
-                        Write-log $action
+                        Write-Log $action
                         $NewMailbox = Enable-RemoteMailbox -Identity $UserName -alias $alias -DomainController $DCHostName -remoteroutingaddress "$UserName@$O365EmailSuffix"
                     }
                 }
@@ -664,15 +664,15 @@ function Force-ADSync {
         $state = (Get-ADSyncConnectorRunStatus | ? { $_.RunspaceId -eq (Get-ADSyncConnector -Name "$O365EmailSuffix - AAD").runspaceid })
         $ADSyncLoop = 0
         while ($State -and $ADSyncLoop -le 10) {
-            Write-log "AD Sync Connector is currently busy, waiting 30 seconds before trying again"
+            Write-Log "AD Sync Connector is currently busy, waiting 30 seconds before trying again"
             Start-Sleep -Seconds 30
             $State = (Get-ADSyncConnectorRunStatus | ? { $_.RunspaceId -eq (Get-ADSyncConnector -Name "$O365EmailSuffix - AAD").runspaceid })
             $ADSyncLoop++
         }
         if ($ADSyncLoop -ge 10) {
-            Write-log "AD Sync Connector has returned a busy state for 5 minutes or more, if this continues, please contact the servicedesk to investigate further"
+            Write-Log "AD Sync Connector has returned a busy state for 5 minutes or more, if this continues, please contact the servicedesk to investigate further"
         } else {
-            Write-log "Attempting to run Azure AD Sync Cycle"
+            Write-Log "Attempting to run Azure AD Sync Cycle"
             Start-ADSyncSyncCycle -PolicyType Delta
         }
     } catch {
@@ -688,15 +688,15 @@ function Force-ADSync {
     $state = (Get-ADSyncConnectorRunStatus | ? { $_.RunspaceId -eq (Get-ADSyncConnector -Name "$O365EmailSuffix - AAD").runspaceid })
     $ADSyncLoop = 0
     while ($State -and $ADSyncLoop -le 10) {
-        Write-log "AD Sync Connector is busy, waiting 30 seconds To allow sync to complete"
+        Write-Log "AD Sync Connector is busy, waiting 30 seconds To allow sync to complete"
         Start-Sleep -Seconds 30
         $State = (Get-ADSyncConnectorRunStatus | ? { $_.RunspaceId -eq (Get-ADSyncConnector -Name "$O365EmailSuffix - AAD").runspaceid })
         $ADSyncLoop++
     }
     if (!($state) -and $ADSyncLoop -le 10) {
-        Write-log "AD Sync complete"
+        Write-Log "AD Sync complete"
     } else {
-        Write-log "AD Sync has not completed within 5 minutes, please check log for issues relating to syncronization issues."
+        Write-Log "AD Sync has not completed within 5 minutes, please check log for issues relating to syncronization issues."
     }
 }
 #====================================================================
@@ -878,7 +878,7 @@ if ($O365 -eq "E" -or $O365 -eq "H") {
         Write-Log "ERROR: $_" -ForegroundColor Red
     }
     if (!$ExSession) {
-        Write-log "Exchange session not connected Stopping Script"
+        Write-Log "Exchange session not connected Stopping Script"
         Exit
     }
 }
@@ -1122,16 +1122,16 @@ if ($O365 -eq "E") {
         if ($MBX) {
             if ($Mailbox.SharedEquipmentRoom) {
                 $logmsg = "Updating Mailbox: " + $Mailbox.Alias +" "+ $Mailbox.SharedEquipmentRoom +" "+ $Mailbox.Capacity +" "
-                Write-log $logMsg
+                Write-Log $logMsg
                 Update-Mailbox-OnPrem $mailbox.Alias $Mailbox.SharedEquipmentRoom $Mailbox.Capacity
             } elseif (!$Mailbox.SharedEquipmentRoom -and !$Mailbox.Capacity) {
                 $logmsg = "Updating Mailbox: " + $Mailbox.Alias
-                Write-log $logMsg
+                Write-Log $logMsg
                 Update-Mailbox-OnPrem $mailbox.Alias $Mailbox.SharedEquipmentRoom $Mailbox.Capacity
             }
         } else {
             $logmsg = "Mailbox: " + $Mailbox.Alias +" not found in AD"
-            Write-log $logMsg
+            Write-Log $logMsg
         }
     }
     if (Get-PSSession -Name ExSession -ErrorAction SilentlyContinue) {
@@ -1216,7 +1216,7 @@ if ($O365 -eq "H") {
         }
     }
     if ($connected -eq $true) {
-        Write-log "Updating Mailboxes"
+        Write-Log "Updating Mailboxes"
         $LastTry = $True
         Foreach ($mailbox in $EnabledMailboxes) {
             $i = 0
@@ -1234,17 +1234,17 @@ if ($O365 -eq "H") {
             if ($MBX) {
                 if ($Mailbox.SharedEquipmentRoom) {
                     $logmsg = "Updating Mailbox: " + $Mailbox.Alias +" "+ $Mailbox.SharedEquipmentRoom +" "+ $Mailbox.Capacity +" "+ $Mailbox.AdminID
-                    Write-log $logMsg
+                    Write-Log $logMsg
                     Update-Mailbox-Hybrid $mailbox.Alias $Mailbox.SharedEquipmentRoom $Mailbox.Capacity
                 } elseif (!$Mailbox.SharedEquipmentRoom -and !$Mailbox.Capacity) {
                     $logmsg = "Updating Mailbox: " + $Mailbox.Alias
-                    Write-log $logMsg
+                    Write-Log $logMsg
                     Update-Mailbox-Hybrid $mailbox.Alias $Mailbox.SharedEquipmentRoom $Mailbox.Capacity
                 }
             } else {
                 $logmsg = "Mailbox: " + $Mailbox.Alias +" not found in AzureAD"
                 $Failures += $Mailbox
-                Write-log $logMsg
+                Write-Log $logMsg
             }
         }
         foreach ($USER in $CreatedUsers) {
