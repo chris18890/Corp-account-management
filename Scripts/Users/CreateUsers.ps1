@@ -1295,6 +1295,7 @@ if ($O365 -eq "H") {
                 }
             }
         }
+        Disconnect-ExchangeOnline -Confirm:$false
     }
     if (Get-PSSession) {
         Write-Log "Cleaning up PSSessions"

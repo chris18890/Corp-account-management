@@ -211,6 +211,7 @@ try {
     }
     Write-Log ""
     Write-Log "Office 365 sync & mailbox update complete"
+    Disconnect-ExchangeOnline -Confirm:$false
 } catch {
     $e = $_.Exception
     $line = $_.InvocationInfo.ScriptLineNumber
