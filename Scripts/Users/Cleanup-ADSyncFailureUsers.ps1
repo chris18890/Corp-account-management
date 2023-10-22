@@ -64,19 +64,23 @@ $CreatedUsers = @(IMPORT-CSV "users.csv")
 try {
     if (!(Get-Module -ListAvailable -Name MSOnline)) {
         Write-Log "Installing MSOnline module"
-        Install-Module MSOnline
+        Install-Module -Name MSOnline
     }
     if (!(Get-Module -ListAvailable -Name ExchangeOnlineManagement)) {
         Write-Log "Installing ExchangeOnlineManagement module"
         Install-Module -Name ExchangeOnlineManagement
     }
     Write-Log "Starting AzureAD Sync"
-    Import-Module ADSync
+    Import-Module -Name ADSync
     Start-ADSyncSyncCycle -PolicyType Delta
     Write-Log "Connecting to Office 365"
+    Import-Module -Name MSOnline
     Connect-MsolService
+    Write-Log "Connected to Office 365"
     Write-Log "Connecting to Exchange Online"
+    Import-Module -Name ExchangeOnlineManagement
     Connect-ExchangeOnline
+    Write-Log "Connected to Exchange Online"
     Write-Log "Pausing for 30 seconds"
     Start-Sleep -s 30
     foreach ($USER in $CreatedUsers) {
