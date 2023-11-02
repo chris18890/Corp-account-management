@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][switch]$O365
+    [switch]$O365
 )
 $Domain = "$env:userdomain"
 $EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName
