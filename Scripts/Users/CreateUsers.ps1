@@ -43,9 +43,9 @@ $EmailFrom = "noreply@$EmailSuffix" # From address
 $PasswordLength = 4 # Number of characters per password group
 $EnabledMailboxes = @() # Array to Store Completed Mailbox requests for later enumeration
 $Roles = @("Company Administrator")
-$Level1Roles = @("Helpdesk Administrator", "Service support administrator", "Global Reader")
-$Level2Roles = @("User Administrator", "Groups administrator", "Authentication administrator", "License Administrator")
-$Level3Roles = @("Exchange Administrator", "Teams Administrator", "Sharepoint Administrator", "Privileged authentication administrator", "Privileged role administrator")
+$Level1Roles = @("Helpdesk Administrator", "Service Support Administrator", "Global Reader")
+$Level2Roles = @("User Administrator", "Groups Administrator", "Authentication Administrator", "License Administrator")
+$Level3Roles = @("Exchange Administrator", "Teams Administrator", "SharePoint Administrator", "Privileged Authentication Administrator", "Privileged Role Administrator")
 # File locations
 $LogPath = "$ScriptPath\LogFiles"
 if (!(TEST-PATH $LogPath)) {
