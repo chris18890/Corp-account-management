@@ -512,7 +512,7 @@ function Update-Mailbox-Hybrid {
                             Set-Mailbox -Identity $UserName -type:shared
                         }
                         Write-Log "Updating Shared Mailbox $UserName : Adding Permissions"
-                        $GroupName = "sh_$UserName"
+                        $GroupName = "sh_$UserName@$EmailSuffix"
                         Add-MailboxPermission -Identity $UserName -User $GroupName -AccessRights FullAccess -confirm:$false #-DomainController $DCHostName
                         Add-RecipientPermission -Identity $UserName -trustee $GroupName -Accessrights "SendAs" -confirm:$false #-DomainController $DCHostName
                         Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
@@ -536,7 +536,7 @@ function Update-Mailbox-Hybrid {
                         #Set calendar resource attendant to auto-accept
                         Write-Log "Updating Equipment Mailbox $UserName : Updating Calendar Processing"
                         Set-CalendarProcessing -Identity $UserName -AutomateProcessing AutoAccept -confirm:$false #-DomainController $DCHostName
-                        $GroupName = "eq_$UserName"
+                        $GroupName = "eq_$UserName@$EmailSuffix"
                         Add-MailboxPermission -Identity $UserName -User $GroupName -AccessRights FullAccess -confirm:$false #-DomainController $DCHostName
                         Add-RecipientPermission -Identity $UserName -Trustee $GroupName -Accessrights "SendAs" -confirm:$false #-DomainController $DCHostName
                         Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
@@ -563,7 +563,7 @@ function Update-Mailbox-Hybrid {
                         if ($Capacity -ne "N") {
                             Set-Mailbox -Identity $UserName -ResourceCapacity $Capacity #-DomainController $DCHostName
                         }
-                        $GroupName = "ro_$UserName"
+                        $GroupName = "ro_$UserName@$EmailSuffix"
                         Add-MailboxPermission -Identity $UserName -User $GroupName -AccessRights FullAccess -confirm:$false #-DomainController $DCHostName
                         Add-RecipientPermission -Identity $UserName -Trustee $GroupName -Accessrights "SendAs" -confirm:$false #-DomainController $DCHostName
                         Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"

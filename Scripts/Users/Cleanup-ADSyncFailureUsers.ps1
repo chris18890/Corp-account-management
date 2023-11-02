@@ -115,7 +115,7 @@ try {
                         Set-Mailbox -Identity $UserPrincipalName -type:shared
                     }
                     Write-Log "Updating Shared Mailbox $UserName : Adding Permissions"
-                    $GroupName = "sh_$UserName"
+                    $GroupName = "sh_$UserName@$EmailSuffix"
                     Add-MailboxPermission -Identity $UserPrincipalName -User $GroupName -AccessRights FullAccess -InheritanceType All -confirm:$false
                     Add-RecipientPermission -Identity $UserPrincipalName -Trustee $GroupName -AccessRights SendAs -confirm:$false
                     Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
@@ -138,7 +138,7 @@ try {
                     #Set calendar resource attendant to auto-accept
                     Set-CalendarProcessing -Identity $UserPrincipalName -AutomateProcessing AutoAccept -confirm:$false
                     Write-Log "Updating Equipment Mailbox $UserName : Adding Permissions"
-                    $GroupName = "eq_$UserName"
+                    $GroupName = "eq_$UserName@$EmailSuffix"
                     Add-MailboxPermission -Identity $UserPrincipalName -User $GroupName -AccessRights FullAccess -confirm:$false
                     Add-RecipientPermission -Identity $UserPrincipalName -Trustee $GroupName -Accessrights "SendAs" -confirm:$false
                     Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
@@ -164,7 +164,7 @@ try {
                         Set-Mailbox -Identity $UserPrincipalName -ResourceCapacity $Capacity
                     }
                     Write-Log "Updating Room Mailbox $UserName : Adding Permissions"
-                    $GroupName = "ro_$UserName"
+                    $GroupName = "ro_$UserName@$EmailSuffix"
                     Add-MailboxPermission -Identity $UserPrincipalName -User $GroupName -AccessRights FullAccess -confirm:$false
                     Add-RecipientPermission -Identity $UserPrincipalName -Trustee $GroupName -Accessrights "SendAs" -confirm:$false
                     Write-Log "Delegated permissions for mailbox $UserName to group $GroupName"
