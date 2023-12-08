@@ -19,7 +19,7 @@ while (Test-Path "$LogPath\$($LogFileName)_$LogIndex.log") {
     $LogIndex ++
 }
 $LogFile = "$LogPath\$($LogFileName)_$LogIndex.log"
-$Roles = @("Company Administrator")
+$Roles = @("Global Administrator")
 $Level1Roles = @("Helpdesk Administrator", "Service Support Administrator", "Global Reader")
 $Level2Roles = @("User Administrator", "Groups Administrator", "Authentication Administrator", "License Administrator")
 $Level3Roles = @("Exchange Administrator", "Teams Administrator", "SharePoint Administrator", "Privileged Authentication Administrator", "Privileged Role Administrator")
@@ -62,9 +62,9 @@ Write-Log ""
 #====================================================================
 $CreatedUsers = @(IMPORT-CSV "users.csv")
 try {
-    if (!(Get-Module -ListAvailable -Name MSOnline)) {
-        Write-Log "Installing MSOnline module"
-        Install-Module -Name MSOnline
+    if (!(Get-Module -ListAvailable -Name Microsoft.Graph)) {
+        Write-Log "Installing Microsoft.Graph module"
+        Install-Module -Name Microsoft.Graph
     }
     if (!(Get-Module -ListAvailable -Name ExchangeOnlineManagement)) {
         Write-Log "Installing ExchangeOnlineManagement module"
@@ -73,10 +73,12 @@ try {
     Write-Log "Starting AzureAD Sync"
     Import-Module -Name ADSync
     Start-ADSyncSyncCycle -PolicyType Delta
-    Write-Log "Connecting to Office 365"
-    Import-Module -Name MSOnline
-    Connect-MsolService
-    Write-Log "Connected to Office 365"
+    Write-Log "Connecting to Microsoft Graph"
+    Import-Module -Name Microsoft.Graph.Authentication
+    Import-Module -Name Microsoft.Graph.Users
+    Import-Module -Name Microsoft.Graph.Identity.DirectoryManagement
+    Connect-MgGraph -NoWelcome -Scopes "RoleManagement.ReadWrite.Directory", "User.ReadWrite.All"
+    Write-Log "Connected to Microsoft Graph"
     Write-Log "Connecting to Exchange Online"
     Import-Module -Name ExchangeOnlineManagement
     Connect-ExchangeOnline
@@ -103,7 +105,7 @@ try {
         if ($MBX) {
             Write-Log ""
             Write-Log "Assigning region for $UserName"
-            Set-MsolUser -UserPrincipalName $UserPrincipalName -UsageLocation GB
+            Update-MgUser -UserId $UserPrincipalName -UsageLocation GB
             Set-MailboxSpellingConfiguration -Identity $UserPrincipalName -DictionaryLanguage EnglishUnitedKingdom
             Set-MailboxRegionalConfiguration -Identity $UserPrincipalName -Language en-GB -DateFormat "dd/MM/yyyy" -TimeFormat "HH:mm" -TimeZone "GMT Standard Time"
             $identityStr = $UserPrincipalName + ":\Calendar"
@@ -175,30 +177,36 @@ try {
                         if ($UserNameAdmin.Length -gt 20) {
                             $UserNameAdmin = $UserNameAdmin.Substring(0,20)
                         }
+                        $MgUserAdmin = Get-MgUser -Filter "userPrincipalName eq '$UserNameAdmin@$EmailSuffix'"
                         if ($PrivLevel -ge "1") {
                             foreach ($roleName in $Level1Roles) {
                                 Write-Log "Assigning roles for $UserNameAdmin"
-                                Add-MsolRoleMember -RoleMemberEmailAddress "$UserNameAdmin@$EmailSuffix" -RoleName $roleName
+                                $roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -Filter "DisplayName eq '$roleName'"
+                                New-MgRoleManagementDirectoryRoleAssignment -DirectoryScopeId '/' -RoleDefinitionId $roleDefinition.Id -PrincipalId $MgUserAdmin.Id
                             }
                         }
                         if ($PrivLevel -ge "2") {
                             foreach ($roleName in $Level2Roles) {
                                 Write-Log "Assigning roles for $UserNameAdmin"
-                                Add-MsolRoleMember -RoleMemberEmailAddress "$UserNameAdmin@$EmailSuffix" -RoleName $roleName
+                                $roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -Filter "DisplayName eq '$roleName'"
+                                New-MgRoleManagementDirectoryRoleAssignment -DirectoryScopeId '/' -RoleDefinitionId $roleDefinition.Id -PrincipalId $MgUserAdmin.Id
                             }
                         }
                         if ($PrivLevel -ge "3") {
                             foreach ($roleName in $Level3Roles) {
                                 Write-Log "Assigning roles for $UserNameAdmin"
-                                Add-MsolRoleMember -RoleMemberEmailAddress "$UserNameAdmin@$EmailSuffix" -RoleName $roleName
+                                $roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -Filter "DisplayName eq '$roleName'"
+                                New-MgRoleManagementDirectoryRoleAssignment -DirectoryScopeId '/' -RoleDefinitionId $roleDefinition.Id -PrincipalId $MgUserAdmin.Id
                             }
                             $UserNameDomainAdmin = "da." + $UserName
                             if ($UserNameDomainAdmin.Length -gt 20) {
                                 $UserNameDomainAdmin = $UserNameDomainAdmin.Substring(0,20)
                             }
+                            $MgUserDomainAdmin = Get-MgUser -Filter "userPrincipalName eq '$UserNameDomainAdmin@$EmailSuffix'"
                             foreach ($roleName in $Roles) {
                                 Write-Log "Assigning roles for $UserNameDomainAdmin"
-                                Add-MsolRoleMember -RoleMemberEmailAddress "$UserNameDomainAdmin@$EmailSuffix" -RoleName $roleName
+                                $roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -Filter "DisplayName eq '$roleName'"
+                                New-MgRoleManagementDirectoryRoleAssignment -DirectoryScopeId '/' -RoleDefinitionId $roleDefinition.Id -PrincipalId $MgUserDomainAdmin.Id
                             }
                         }
                     }
@@ -212,6 +220,7 @@ try {
     Write-Log ""
     Write-Log "Office 365 sync & mailbox update complete"
     Disconnect-ExchangeOnline -Confirm:$false
+    Disconnect-MgGraph
 } catch {
     $e = $_.Exception
     $line = $_.InvocationInfo.ScriptLineNumber

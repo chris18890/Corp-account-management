@@ -42,7 +42,7 @@ $SMTPServer = "$Domain-EXCH.$DNSSuffix" # SMTP server used for email notificatio
 $EmailFrom = "noreply@$EmailSuffix" # From address
 $PasswordLength = 4 # Number of characters per password group
 $EnabledMailboxes = @() # Array to Store Completed Mailbox requests for later enumeration
-$Roles = @("Company Administrator")
+$Roles = @("Global Administrator")
 $Level1Roles = @("Helpdesk Administrator", "Service Support Administrator", "Global Reader")
 $Level2Roles = @("User Administrator", "Groups Administrator", "Authentication Administrator", "License Administrator")
 $Level3Roles = @("Exchange Administrator", "Teams Administrator", "SharePoint Administrator", "Privileged Authentication Administrator", "Privileged Role Administrator")
@@ -1153,9 +1153,9 @@ if ($O365 -eq "H") {
     $Failures = @()
     if ($connected -eq $false) {
         try {
-            if (!(Get-Module -ListAvailable -Name MSOnline)) {
-                Write-Log "Installing MSOnline module"
-                Install-Module -Name MSOnline
+            if (!(Get-Module -ListAvailable -Name Microsoft.Graph)) {
+                Write-Log "Installing Microsoft.Graph module"
+                Install-Module -Name Microsoft.Graph
             }
             if (!(Get-Module -ListAvailable -Name ExchangeOnlineManagement)) {
                 Write-Log "Installing ExchangeOnlineManagement module"
@@ -1177,10 +1177,12 @@ if ($O365 -eq "H") {
             Import-Module -Name ExchangeOnlineManagement
             Connect-ExchangeOnline
             Write-Log "Connected to Exchange Online"
-            Write-Log "Connecting to Office 365"
-            Import-Module -Name MSOnline
-            Connect-MsolService
-            Write-Log "Connected to Office 365"
+            Write-Log "Connecting to Microsoft Graph"
+            Import-Module -Name Microsoft.Graph.Authentication
+            Import-Module -Name Microsoft.Graph.Users
+            Import-Module -Name Microsoft.Graph.Identity.DirectoryManagement
+            Connect-MgGraph -NoWelcome -Scopes "RoleManagement.ReadWrite.Directory", "User.ReadWrite.All"
+            Write-Log "Connected to Microsoft Graph"
             $Connected = $true
         } catch {
             $e = $_.Exception
@@ -1199,10 +1201,12 @@ if ($O365 -eq "H") {
             Import-Module -Name ExchangeOnlineManagement
             Connect-ExchangeOnline
             Write-Log "Connected to Exchange Online"
-            Write-Log "Connecting to Office 365"
-            Import-Module -Name MSOnline
-            Connect-MsolService
-            Write-Log "Connected to Office 365"
+            Write-Log "Connecting to Microsoft Graph"
+            Import-Module -Name Microsoft.Graph.Authentication
+            Import-Module -Name Microsoft.Graph.Users
+            Import-Module -Name Microsoft.Graph.Identity.DirectoryManagement
+            Connect-MgGraph -NoWelcome -Scopes "RoleManagement.ReadWrite.Directory", "User.ReadWrite.All"
+            Write-Log "Connected to Microsoft Graph"
             $Connected = $true
         } catch {
             $e = $_.Exception
@@ -1257,7 +1261,7 @@ if ($O365 -eq "H") {
             $UserPrincipalName = "$UserName@$EmailSuffix"
             Write-Log ""
             Write-Log "Assigning region for $UserName"
-            Set-MsolUser -UserPrincipalName $UserPrincipalName -UsageLocation GB
+            Update-MgUser -UserId $UserPrincipalName -UsageLocation GB
             switch ($SharedEquipmentRoom) {
                 default {
                     if ($Dept -eq "IT" -and $HiPriv -eq "Y") {
@@ -1265,30 +1269,36 @@ if ($O365 -eq "H") {
                         if ($UserNameAdmin.Length -gt 20) {
                             $UserNameAdmin = $UserNameAdmin.Substring(0,20)
                         }
+                        $MgUserAdmin = Get-MgUser -Filter "userPrincipalName eq '$UserNameAdmin@$EmailSuffix'"
                         if ($PrivLevel -ge "1") {
                             foreach ($roleName in $Level1Roles) {
                                 Write-Log "Assigning roles for $UserNameAdmin"
-                                Add-MsolRoleMember -RoleMemberEmailAddress "$UserNameAdmin@$EmailSuffix" -RoleName $roleName
+                                $roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -Filter "DisplayName eq '$roleName'"
+                                New-MgRoleManagementDirectoryRoleAssignment -DirectoryScopeId '/' -RoleDefinitionId $roleDefinition.Id -PrincipalId $MgUserAdmin.Id
                             }
                         }
                         if ($PrivLevel -ge "2") {
                             foreach ($roleName in $Level2Roles) {
                                 Write-Log "Assigning roles for $UserNameAdmin"
-                                Add-MsolRoleMember -RoleMemberEmailAddress "$UserNameAdmin@$EmailSuffix" -RoleName $roleName
+                                $roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -Filter "DisplayName eq '$roleName'"
+                                New-MgRoleManagementDirectoryRoleAssignment -DirectoryScopeId '/' -RoleDefinitionId $roleDefinition.Id -PrincipalId $MgUserAdmin.Id
                             }
                         }
                         if ($PrivLevel -ge "3") {
                             foreach ($roleName in $Level3Roles) {
                                 Write-Log "Assigning roles for $UserNameAdmin"
-                                Add-MsolRoleMember -RoleMemberEmailAddress "$UserNameAdmin@$EmailSuffix" -RoleName $roleName
+                                $roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -Filter "DisplayName eq '$roleName'"
+                                New-MgRoleManagementDirectoryRoleAssignment -DirectoryScopeId '/' -RoleDefinitionId $roleDefinition.Id -PrincipalId $MgUserAdmin.Id
                             }
                             $UserNameDomainAdmin = "da." + $UserName
                             if ($UserNameDomainAdmin.Length -gt 20) {
                                 $UserNameDomainAdmin = $UserNameDomainAdmin.Substring(0,20)
                             }
+                            $MgUserDomainAdmin = Get-MgUser -Filter "userPrincipalName eq '$UserNameDomainAdmin@$EmailSuffix'"
                             foreach ($roleName in $Roles) {
                                 Write-Log "Assigning roles for $UserNameDomainAdmin"
-                                Add-MsolRoleMember -RoleMemberEmailAddress "$UserNameDomainAdmin@$EmailSuffix" -RoleName $roleName
+                                $roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -Filter "DisplayName eq '$roleName'"
+                                New-MgRoleManagementDirectoryRoleAssignment -DirectoryScopeId '/' -RoleDefinitionId $roleDefinition.Id -PrincipalId $MgUserDomainAdmin.Id
                             }
                         }
                     }
@@ -1296,6 +1306,7 @@ if ($O365 -eq "H") {
             }
         }
         Disconnect-ExchangeOnline -Confirm:$false
+        Disconnect-MgGraph
     }
     if (Get-PSSession) {
         Write-Log "Cleaning up PSSessions"
