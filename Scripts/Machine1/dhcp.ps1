@@ -46,6 +46,11 @@ if ((gwmi win32_computersystem).partofdomain -eq $false) {
         } catch [Microsoft.PowerShell.Commands.MemberExistsException] {
             Write-Host "$Domain\RG_DHCP_Admins is already a member of DHCP Administrators" -ForegroundColor Green
         }
+        try {
+            Add-LocalGroupMember -Group "DHCP Users" -Member "$Domain\RG_DHCP_Users" -ErrorAction Stop
+        } catch [Microsoft.PowerShell.Commands.MemberExistsException] {
+            Write-Host "$Domain\RG_DHCP_Users is already a member of DHCP Users" -ForegroundColor Green
+        }
         Set-ItemProperty -Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 -Name ConfigurationState -Value 2
         Get-ADComputer $ServerName | Move-ADObject -TargetPath "ou=Servers,$Location"
         Set-DhcpServerv4OptionValue -Router "$IPAddress1"
