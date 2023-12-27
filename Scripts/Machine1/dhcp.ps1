@@ -42,9 +42,9 @@ if ((gwmi win32_computersystem).partofdomain -eq $false) {
         Restart-service dhcpserver
         Add-DhcpServerInDC "$ServerName" "$IPAddress1"
         try {
-            Add-LocalGroupMember -Group "DHCP Administrators" -Member "$Domain\RG_Server_Admins" -ErrorAction Stop
+            Add-LocalGroupMember -Group "DHCP Administrators" -Member "$Domain\RG_DHCP_Admins" -ErrorAction Stop
         } catch [Microsoft.PowerShell.Commands.MemberExistsException] {
-            Write-Host "$Domain\RG_Server_Admins is already a member of DHCP Administrators" -ForegroundColor Green
+            Write-Host "$Domain\RG_DHCP_Admins is already a member of DHCP Administrators" -ForegroundColor Green
         }
         Set-ItemProperty -Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 -Name ConfigurationState -Value 2
         Get-ADComputer $ServerName | Move-ADObject -TargetPath "ou=Servers,$Location"
