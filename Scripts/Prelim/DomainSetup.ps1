@@ -261,15 +261,11 @@ $ExtendedMapParams = @{
 Get-ADObject @ExtendedMapParams | ForEach-Object { $ExtendedRightsMap[$_.displayName] = [System.GUID]$_.rightsGuid }
 $UserPasswordDelegationGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $UserPasswordDelegationGroup).SID
 $ResetUserPasswordACE = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $UserPasswordDelegationGroupSID,"ExtendedRight","Allow",$ExtendedRightsMap["Reset Password"],'Descendents',$GuidMap["user"]
-$ReadForceChangeUserPasswordACE = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $UserPasswordDelegationGroupSID,"ReadProperty","Allow",$GuidMap["pwdLastSet"],'Descendents',$GuidMap["user"]
 $WriteForceChangeUserPasswordACE = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $UserPasswordDelegationGroupSID,"WriteProperty","Allow",$GuidMap["pwdLastSet"],'Descendents',$GuidMap["user"]
-$ReadUnlockUserAccountACE = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $UserPasswordDelegationGroupSID,"ReadProperty","Allow",$GuidMap["lockoutTime"],'Descendents',$GuidMap["user"]
 $WriteUnlockUserAccountACE = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $UserPasswordDelegationGroupSID,"WriteProperty","Allow",$GuidMap["lockoutTime"],'Descendents',$GuidMap["user"]
 $Acl = Get-Acl "AD:\$UserPasswordDelegationOU"
 $Acl.AddAccessRule($ResetUserPasswordACE)
-$Acl.AddAccessRule($ReadForceChangeUserPasswordACE)
 $Acl.AddAccessRule($WriteForceChangeUserPasswordACE)
-$Acl.AddAccessRule($ReadUnlockUserAccountACE)
 $Acl.AddAccessRule($WriteUnlockUserAccountACE)
 $Acl | Set-Acl
 $SERAccessAdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $SERAccessAdminGroup).SID
@@ -460,9 +456,7 @@ $InstallerGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Ge
 $Acl = Get-ACL "AD:\$Location"
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $InstallerGroupSID,"CreateChild","Allow","All",$GuidMap["computer"]))
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $InstallerGroupSID,"DeleteChild","Allow","All",$GuidMap["computer"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $InstallerGroupSID,"ReadProperty","Allow","Descendents",$GuidMap["computer"]))
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $InstallerGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["computer"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $InstallerGroupSID,"ReadControl","Allow","Descendents",$GuidMap["computer"]))
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $InstallerGroupSID,"WriteDacl","Allow","Descendents",$GuidMap["computer"]))
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $InstallerGroupSID,"Self","Allow",$ExtendedRightsMap["Validated write to DNS host name"],"Descendents",$GuidMap["computer"]))
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $InstallerGroupSID,"Self","Allow",$ExtendedRightsMap["Validated write to service principal name"],"Descendents",$GuidMap["computer"]))
