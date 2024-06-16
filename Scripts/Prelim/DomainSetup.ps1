@@ -286,22 +286,24 @@ $StandardGroupAdminGroupSID = New-Object System.Security.Principal.SecurityIdent
 $Acl = Get-Acl "AD:\OU=Hi_Priv_Accounts,OU=$ITGroup,$EndPath"
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminAccountAdminGroupSID,"CreateChild","Allow","All",$GuidMap["user"]))
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminAccountAdminGroupSID,"DeleteChild","Allow","All",$GuidMap["user"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminAccountAdminGroupSID,"GenericAll","Allow","Descendents",$GuidMap["user"]))
+$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminAccountAdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["user"]))
+$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminAccountAdminGroupSID,"ExtendedRight","Allow",$ExtendedRightsMap["Reset Password"],"Descendents",$GuidMap["user"]))
 $Acl | Set-Acl
 $Acl = Get-Acl "AD:\OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath"
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupAdminGroupSID,"CreateChild","Allow","All",$GuidMap["group"]))
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupAdminGroupSID,"DeleteChild","Allow","All",$GuidMap["group"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupAdminGroupSID,"GenericAll","Allow","Descendents",$GuidMap["group"]))
+$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupAdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["group"]))
 $Acl | Set-Acl
 $Acl = Get-Acl "AD:\OU=$StaffGroup,$EndPath"
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardAccountAdminGroupSID,"CreateChild","Allow","All",$GuidMap["user"]))
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardAccountAdminGroupSID,"DeleteChild","Allow","All",$GuidMap["user"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardAccountAdminGroupSID,"GenericAll","Allow","Descendents",$GuidMap["user"]))
+$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardAccountAdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["user"]))
+$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardAccountAdminGroupSID,"ExtendedRight","Allow",$ExtendedRightsMap["Reset Password"],"Descendents",$GuidMap["user"]))
 $Acl | Set-Acl
 $Acl = Get-Acl "AD:\OU=$GroupsOU,$EndPath"
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardGroupAdminGroupSID,"CreateChild","Allow","All",$GuidMap["group"]))
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardGroupAdminGroupSID,"DeleteChild","Allow","All",$GuidMap["group"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardGroupAdminGroupSID,"GenericAll","Allow","Descendents",$GuidMap["group"]))
+$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardGroupAdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["group"]))
 $Acl | Set-Acl
 #====================================================================
 
@@ -383,6 +385,8 @@ if (!(TEST-PATH "\\$Domain\$RootShare\$ShareName")) {
     $Acl.SetAccessRuleProtection($isProtected, $preserveInheritance)
     $Ar = New-Object system.security.accesscontrol.filesystemaccessrule($ShareName,"Modify","ContainerInherit, ObjectInherit", "None", "Allow")
     $Acl.SetAccessRule($Ar)
+    $Ar = New-Object system.security.accesscontrol.filesystemaccessrule($ITAdminGroup,"Modify","ContainerInherit, ObjectInherit", "None", "Allow")
+    $Acl.SetAccessRule($Ar)
     $Ar = New-Object system.security.accesscontrol.filesystemaccessrule("ADM_Task_DFS_Admins","FullControl","ContainerInherit, ObjectInherit", "None", "Allow")
     $Acl.SetAccessRule($Ar)
     $Ar = New-Object system.security.accesscontrol.filesystemaccessrule("Administrators","FullControl","ContainerInherit, ObjectInherit", "None", "Allow")
@@ -404,6 +408,8 @@ if (!(TEST-PATH "\\$Domain\$RootShare\$ShareName")) {
     $Ar = New-Object system.security.accesscontrol.filesystemaccessrule("Authenticated Users","ReadAndExecute","ContainerInherit, ObjectInherit", "None", "Allow")
     $Acl.SetAccessRule($Ar)
     $Ar = New-Object system.security.accesscontrol.filesystemaccessrule($ITGroup,"Modify","ContainerInherit, ObjectInherit", "None", "Allow")
+    $Acl.SetAccessRule($Ar)
+    $Ar = New-Object system.security.accesscontrol.filesystemaccessrule($ITAdminGroup,"Modify","ContainerInherit, ObjectInherit", "None", "Allow")
     $Acl.SetAccessRule($Ar)
     $Ar = New-Object system.security.accesscontrol.filesystemaccessrule("ADM_Task_DFS_Admins","FullControl","ContainerInherit, ObjectInherit", "None", "Allow")
     $Acl.SetAccessRule($Ar)
