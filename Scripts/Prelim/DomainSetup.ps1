@@ -156,6 +156,43 @@ function Link-GPO {
 #====================================================================
 
 #====================================================================
+#Delegate permission on group objects to a group
+#====================================================================
+function Delegate-Group {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$AdminGroupName,
+        [Parameter(Mandatory)][string]$TargetOU
+    )
+    $AdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $AdminGroupName).SID
+    $Acl = Get-Acl "AD:\OU=$TargetOU,$EndPath"
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"CreateChild","Allow","All",$GuidMap["group"]))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"DeleteChild","Allow","All",$GuidMap["group"]))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["group"]))
+    $Acl | Set-Acl
+}
+#====================================================================
+
+#====================================================================
+#Delegate permission on user objects to a group
+#====================================================================
+function Delegate-User {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$AdminGroupName,
+        [Parameter(Mandatory)][string]$TargetOU
+    )
+    $AdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $AdminGroupName).SID
+    $Acl = Get-Acl "AD:\OU=$TargetOU,$EndPath"
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"CreateChild","Allow","All",$GuidMap["user"]))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"DeleteChild","Allow","All",$GuidMap["user"]))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["user"]))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"ExtendedRight","Allow",$ExtendedRightsMap["Reset Password"],"Descendents",$GuidMap["user"]))
+    $Acl | Set-Acl
+}
+#====================================================================
+
+#====================================================================
 #Add additional UPN suffix
 #====================================================================
 Get-ADForest | Set-ADForest -UPNSuffixes @{add="$EmailSuffix"}
@@ -304,45 +341,12 @@ $Acl | Set-Acl
 $Acl = Get-Acl "AD:\$RoomGroupsOU"
 $Acl.AddAccessRule($WriteGroupMembershipACE)
 $Acl | Set-Acl
-$AdminAccountAdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $AdminAccountAdminGroup).SID
-$AdminGroupAdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $AdminGroupAdminGroup).SID
-$StandardAccountAdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $StandardAccountAdminGroup).SID
-$StandardGroupAdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $StandardGroupAdminGroup).SID
-$LocalAdminAdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $LocalAdminAdminGroup).SID
-$ServiceAccountAdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $ServiceAccountAdminGroup).SID
-$Acl = Get-Acl "AD:\OU=Hi_Priv_Accounts,OU=$ITGroup,$EndPath"
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminAccountAdminGroupSID,"CreateChild","Allow","All",$GuidMap["user"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminAccountAdminGroupSID,"DeleteChild","Allow","All",$GuidMap["user"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminAccountAdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["user"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminAccountAdminGroupSID,"ExtendedRight","Allow",$ExtendedRightsMap["Reset Password"],"Descendents",$GuidMap["user"]))
-$Acl | Set-Acl
-$Acl = Get-Acl "AD:\OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath"
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupAdminGroupSID,"CreateChild","Allow","All",$GuidMap["group"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupAdminGroupSID,"DeleteChild","Allow","All",$GuidMap["group"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupAdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["group"]))
-$Acl | Set-Acl
-$Acl = Get-Acl "AD:\OU=$StaffGroup,$EndPath"
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardAccountAdminGroupSID,"CreateChild","Allow","All",$GuidMap["user"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardAccountAdminGroupSID,"DeleteChild","Allow","All",$GuidMap["user"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardAccountAdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["user"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardAccountAdminGroupSID,"ExtendedRight","Allow",$ExtendedRightsMap["Reset Password"],"Descendents",$GuidMap["user"]))
-$Acl | Set-Acl
-$Acl = Get-Acl "AD:\OU=$GroupsOU,$EndPath"
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardGroupAdminGroupSID,"CreateChild","Allow","All",$GuidMap["group"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardGroupAdminGroupSID,"DeleteChild","Allow","All",$GuidMap["group"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $StandardGroupAdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["group"]))
-$Acl | Set-Acl
-$Acl = Get-Acl "AD:\OU=Local_Admin_Groups,OU=$ITGroup,$EndPath"
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $LocalAdminAdminGroupSID,"CreateChild","Allow","All",$GuidMap["group"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $LocalAdminAdminGroupSID,"DeleteChild","Allow","All",$GuidMap["group"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $LocalAdminAdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["group"]))
-$Acl | Set-Acl
-$Acl = Get-Acl "AD:\OU=Service_Accounts,OU=$ITGroup,$EndPath"
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $ServiceAccountAdminGroupSID,"CreateChild","Allow","All",$GuidMap["user"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $ServiceAccountAdminGroupSID,"DeleteChild","Allow","All",$GuidMap["user"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $ServiceAccountAdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["user"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $ServiceAccountAdminGroupSID,"ExtendedRight","Allow",$ExtendedRightsMap["Reset Password"],"Descendents",$GuidMap["user"]))
-$Acl | Set-Acl
+Delegate-User -AdminGroupName $AdminAccountAdminGroup -TargetOU "Hi_Priv_Accounts,OU=$ITGroup"
+Delegate-Group -AdminGroupName $AdminGroupAdminGroup -TargetOU "Hi_Priv_Groups,OU=$ITGroup"
+Delegate-User -AdminGroupName $StandardAccountAdminGroup -TargetOU $StaffGroup
+Delegate-Group -AdminGroupName $StandardGroupAdminGroup -TargetOU $GroupsOU
+Delegate-User -AdminGroupName $ServiceAccountAdminGroup -TargetOU "Service_Accounts,OU=$ITGroup"
+Delegate-Group -AdminGroupName $LocalAdminAdminGroup -TargetOU "Local_Admin_Groups,OU=$ITGroup"
 #====================================================================
 
 Write-Host "Creating shares"
