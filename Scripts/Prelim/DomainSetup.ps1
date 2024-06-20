@@ -193,6 +193,34 @@ function Delegate-User {
 #====================================================================
 
 #====================================================================
+#Delegate permissions to DNS Operators
+#====================================================================
+function Delegate-DNSOperatorsPermissions {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$AdminGroupName,
+        [Parameter(Mandatory)][string]$TargetDN
+    )
+    $AdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $AdminGroupName).SID
+    $AdminGroupSIDidentity = [System.Security.Principal.IdentityReference] $AdminGroupSID
+    $adRightsGR = [System.DirectoryServices.ActiveDirectoryRights] "GenericRead"
+    $adRightsGE = [System.DirectoryServices.ActiveDirectoryRights] "GenericExecute"
+    $adRightsGW = [System.DirectoryServices.ActiveDirectoryRights] "GenericWrite"
+    $adRightsCC = [System.DirectoryServices.ActiveDirectoryRights] "CreateChild"
+    $adRightsDC = [System.DirectoryServices.ActiveDirectoryRights] "DeleteChild"
+    $AccessControlTypeAllow = [System.Security.AccessControl.AccessControlType] "Allow"
+    $inheritanceType = [System.DirectoryServices.ActiveDirectorySecurityInheritance] "All"
+    $Acl = Get-Acl "AD:\$TargetDN,$EndPath"
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsGR,$AccessControlTypeAllow,$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsGE,$AccessControlTypeAllow,$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsGW,$AccessControlTypeAllow,$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsCC,$AccessControlTypeAllow,$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsDC,$AccessControlTypeAllow,$inheritanceType))
+    $Acl | Set-Acl
+}
+#====================================================================
+
+#====================================================================
 #Add additional UPN suffix
 #====================================================================
 Get-ADForest | Set-ADForest -UPNSuffixes @{add="$EmailSuffix"}
@@ -347,6 +375,8 @@ Delegate-User -AdminGroupName $StandardAccountAdminGroup -TargetOU $StaffGroup
 Delegate-Group -AdminGroupName $StandardGroupAdminGroup -TargetOU $GroupsOU
 Delegate-User -AdminGroupName $ServiceAccountAdminGroup -TargetOU "Service_Accounts,OU=$ITGroup"
 Delegate-Group -AdminGroupName $LocalAdminAdminGroup -TargetOU "Local_Admin_Groups,OU=$ITGroup"
+Delegate-DNSOperatorsPermissions -AdminGroupName $DNSOperatorsGroup -TargetDN "CN=MicrosoftDNS,CN=System"
+Delegate-DNSOperatorsPermissions -AdminGroupName $DNSOperatorsGroup -TargetDN "CN=MicrosoftDNS,DC=DomainDnsZones"
 #====================================================================
 
 Write-Host "Creating shares"
