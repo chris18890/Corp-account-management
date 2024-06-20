@@ -41,6 +41,7 @@ $AdminGroupAdminGroup = "ADM_Task_Admin_Group_Admins"
 $StandardAccountAdminGroup = "ADM_Task_Standard_Account_Admins"
 $StandardGroupAdminGroup = "ADM_Task_Standard_Group_Admins"
 $LocalAdminAdminGroup = "ADM_Task_Local_Admin_Admins"
+$ServiceAccountAdminGroup = "ADM_Task_Service_Account_Admins"
 $DNSReadOnlyGroup = "ADM_Task_DNS_ReadOnly"
 $SharedGroupsOU = "OU=Shared_Mailbox_Access,OU=$GroupsOU,$EndPath"
 $EquipmentGroupsOU = "OU=Equipment_Mailbox_Access,OU=$GroupsOU,$EndPath"
@@ -205,6 +206,7 @@ Create-ADGroup -GroupName $LocalAdminAdminGroup -Path "OU=Hi_Priv_Groups,OU=$ITG
 Create-ADGroup -GroupName "$UserPasswordDelegationGroup" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members can reset passwords of users in the $StaffGroup OU"
 Create-ADGroup -GroupName "ADM_Task_Server_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members are added to Local admin on all computers in $ParentOU & Sub OUs via GPO, are indirect members of the Server Operators BuiltIn group"
 Create-ADGroup -GroupName "$SERAccessAdminGroup" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members can edit the membership of sh_, eq_, & ro_ groups"
+Create-ADGroup -GroupName "$ServiceAccountAdminGroup" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members can create/delete/edit accounts in the Service_Accounts OU"
 Create-ADGroup -GroupName "$StandardAccountAdminGroup" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members can create/delete/edit accounts in the $StaffGroup OU"
 Create-ADGroup -GroupName "$StandardGroupAdminGroup" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members can create/delete/edit groups in the $GroupsOU OU"
 Create-ADGroup -GroupName "ADM_Task_Subscription_Contributors" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members have Contributor permissions on the subscription"
@@ -250,6 +252,8 @@ Add-GroupMember -group "$StandardAccountAdminGroup" -Member "ADM_Role_Level_2_Ad
 Add-GroupMember -group "$StandardAccountAdminGroup" -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group "$StandardGroupAdminGroup" -Member "ADM_Role_Level_2_Admins"
 Add-GroupMember -group "$StandardGroupAdminGroup" -Member "ADM_Role_Level_3_Admins"
+Add-GroupMember -group "$ServiceAccountAdminGroup" -Member "ADM_Role_Level_2_Admins"
+Add-GroupMember -group "$ServiceAccountAdminGroup" -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group "ADM_Task_Subscription_Contributors" -Member "ADM_Role_Level_2_Admins"
 Add-GroupMember -group "ADM_Task_Subscription_Contributors" -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group "ADM_Task_WDS_Deploy_Servers" -Member "ADM_Role_Level_2_Admins"
@@ -303,6 +307,7 @@ $AdminGroupAdminGroupSID = New-Object System.Security.Principal.SecurityIdentifi
 $StandardAccountAdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $StandardAccountAdminGroup).SID
 $StandardGroupAdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $StandardGroupAdminGroup).SID
 $LocalAdminAdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $LocalAdminAdminGroup).SID
+$ServiceAccountAdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $ServiceAccountAdminGroup).SID
 $Acl = Get-Acl "AD:\OU=Hi_Priv_Accounts,OU=$ITGroup,$EndPath"
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminAccountAdminGroupSID,"CreateChild","Allow","All",$GuidMap["user"]))
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminAccountAdminGroupSID,"DeleteChild","Allow","All",$GuidMap["user"]))
@@ -329,6 +334,12 @@ $Acl = Get-Acl "AD:\OU=Local_Admin_Groups,OU=$ITGroup,$EndPath"
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $LocalAdminAdminGroupSID,"CreateChild","Allow","All",$GuidMap["group"]))
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $LocalAdminAdminGroupSID,"DeleteChild","Allow","All",$GuidMap["group"]))
 $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $LocalAdminAdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["group"]))
+$Acl | Set-Acl
+$Acl = Get-Acl "AD:\OU=Service_Accounts,OU=$ITGroup,$EndPath"
+$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $ServiceAccountAdminGroupSID,"CreateChild","Allow","All",$GuidMap["user"]))
+$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $ServiceAccountAdminGroupSID,"DeleteChild","Allow","All",$GuidMap["user"]))
+$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $ServiceAccountAdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["user"]))
+$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $ServiceAccountAdminGroupSID,"ExtendedRight","Allow",$ExtendedRightsMap["Reset Password"],"Descendents",$GuidMap["user"]))
 $Acl | Set-Acl
 #====================================================================
 
