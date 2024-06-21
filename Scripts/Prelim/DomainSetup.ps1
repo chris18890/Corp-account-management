@@ -221,6 +221,46 @@ function Delegate-DNSOperatorsPermissions {
 #====================================================================
 
 #====================================================================
+#Delegate permissions to DNS ReadOnly Group
+#====================================================================
+function Delegate-DNSReadOnlyPermissions {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$AdminGroupName,
+        [Parameter(Mandatory)][string]$TargetDN
+    )
+    $AdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $AdminGroupName).SID
+    $AdminGroupSIDidentity = [System.Security.Principal.IdentityReference] $AdminGroupSID
+    $adRightsGR = [System.DirectoryServices.ActiveDirectoryRights] "GenericRead"
+    $adRightsGE = [System.DirectoryServices.ActiveDirectoryRights] "GenericExecute"
+    $adRightsGW = [System.DirectoryServices.ActiveDirectoryRights] "GenericWrite"
+    $adRightsGA = [System.DirectoryServices.ActiveDirectoryRights] "GenericAll"
+    $adRightsCC = [System.DirectoryServices.ActiveDirectoryRights] "CreateChild"
+    $adRightsDC = [System.DirectoryServices.ActiveDirectoryRights] "DeleteChild"
+    $adRightsRC = [System.DirectoryServices.ActiveDirectoryRights] "ReadControl"
+    $adRightsWD = [System.DirectoryServices.ActiveDirectoryRights] "WriteOwner"
+    $adRightsWO = [System.DirectoryServices.ActiveDirectoryRights] "WriteDacl"
+    $adRightsDT = [System.DirectoryServices.ActiveDirectoryRights] "DeleteTree"
+    $adRightsDEL = [System.DirectoryServices.ActiveDirectoryRights] "Delete"
+    $AccessControlTypeAllow = [System.Security.AccessControl.AccessControlType] "Allow"
+    $AccessControlTypeDeny = [System.Security.AccessControl.AccessControlType] "Deny"
+    $inheritanceType = [System.DirectoryServices.ActiveDirectorySecurityInheritance] "All"
+    $Acl = Get-Acl "AD:\$TargetDN,$EndPath"
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsGR,$AccessControlTypeAllow,$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsGE,$AccessControlTypeAllow,$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsGW,$AccessControlTypeDeny,$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsCC,$AccessControlTypeDeny,$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsDC,$AccessControlTypeDeny,$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsWO,$AccessControlTypeDeny,$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsWD,$AccessControlTypeDeny,$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsDT,$AccessControlTypeDeny,$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsDEL,$AccessControlTypeDeny,$inheritanceType))
+    $Acl.RemoveAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsRC,$AccessControlTypeDeny,$inheritanceType))
+    $Acl | Set-Acl
+}
+#====================================================================
+
+#====================================================================
 #Add additional UPN suffix
 #====================================================================
 Get-ADForest | Set-ADForest -UPNSuffixes @{add="$EmailSuffix"}
@@ -377,6 +417,13 @@ Delegate-User -AdminGroupName $ServiceAccountAdminGroup -TargetOU "Service_Accou
 Delegate-Group -AdminGroupName $LocalAdminAdminGroup -TargetOU "Local_Admin_Groups,OU=$ITGroup"
 Delegate-DNSOperatorsPermissions -AdminGroupName $DNSOperatorsGroup -TargetDN "CN=MicrosoftDNS,CN=System"
 Delegate-DNSOperatorsPermissions -AdminGroupName $DNSOperatorsGroup -TargetDN "CN=MicrosoftDNS,DC=DomainDnsZones"
+Delegate-DNSReadOnlyPermissions -AdminGroupName $DNSReadOnlyGroup -TargetDN "CN=MicrosoftDNS,CN=System"
+Delegate-DNSReadOnlyPermissions -AdminGroupName $DNSReadOnlyGroup -TargetDN "CN=MicrosoftDNS,DC=DomainDnsZones"
+$DNSZones = Get-ADObject -Filter * -SearchBase "CN=MicrosoftDNS,DC=DomainDnsZones,$EndPath" -SearchScope 1
+foreach ($DNSZone in $DNSZones) {
+    $DNSZoneName = $DNSZone.Name
+    Delegate-DNSReadOnlyPermissions -AdminGroupName $DNSReadOnlyGroup -TargetDN "DC=$DNSZoneName,CN=MicrosoftDNS,DC=DomainDnsZones"
+}
 #====================================================================
 
 Write-Host "Creating shares"
