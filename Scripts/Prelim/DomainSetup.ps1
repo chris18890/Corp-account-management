@@ -283,7 +283,7 @@ Write-Host "Creating user OUs & Groups"
 #Staff OU & group creation
 #====================================================================
 Create-ADOU -OUName $StaffGroup -Path $EndPath -OUDescription "Top level OU for User objects"
-Create-ADOU -OUName "Groups" -Path $EndPath -OUDescription "Top level OU for Group objects"
+Create-ADOU -OUName $GroupsOU -Path $EndPath -OUDescription "Top level OU for Group objects"
 Create-ADGroup -GroupName $StaffGroup -Path "OU=$GroupsOU,$EndPath" -GroupDescription "Org-wide group for all users"
 Create-ADGroup -GroupName $ITGroup -Path "OU=$GroupsOU,$EndPath" -GroupDescription "Departmental group holding all IT accounts"
 Create-ADGroup -GroupName "License_Office365" -Path "OU=$GroupsOU,$EndPath" -GroupDescription "Used to assign Office365 licenses"
