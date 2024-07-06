@@ -1,0 +1,117 @@
+<?xml version="1.0" ?>
+<unattend xmlns="urn:schemas-microsoft-com:unattend"> 
+    <settings pass="windowsPE"> 
+        <component name="Microsoft-Windows-Setup" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" processorArchitecture="amd64"> 
+            <WindowsDeploymentServices>
+                <Login>
+                    <WillShowUI>OnError</WillShowUI>
+                    <Credentials>
+                        <Domain>%USERDOMAIN%</Domain>
+                        <Password>%USERPASSWORD%</Password>
+                        <Username>%USERNAME%</Username>
+                    </Credentials>
+                </Login>
+                <ImageSelection>
+                    <WillShowUI>OnError</WillShowUI>
+                    <InstallImage>
+                        <ImageName>Server 2016</ImageName>
+                        <ImageGroup>Servers</ImageGroup>
+                        <Filename>Install.wim</Filename>
+                    </InstallImage>
+                    <InstallTo>
+                        <DiskID>0</DiskID>
+                        <PartitionID>2</PartitionID>
+                    </InstallTo>
+                </ImageSelection>
+            </WindowsDeploymentServices>
+            <DiskConfiguration>
+                <WillShowUI>OnError</WillShowUI>
+                <Disk>
+                    <DiskID>0</DiskID>
+                    <WillWipeDisk>true</WillWipeDisk>
+                    <CreatePartitions>
+                        <CreatePartition>
+                            <Order>1</Order>
+                            <Size>500</Size>
+                            <Type>Primary</Type>
+                        </CreatePartition>
+                        <CreatePartition>
+                            <Order>2</Order>
+                            <Size>51200</Size>
+                            <Type>Primary</Type>
+                        </CreatePartition>
+                        <CreatePartition>
+                            <Order>3</Order>
+                            <Extend>true</Extend>
+                            <Type>Primary</Type>
+                        </CreatePartition>
+                    </CreatePartitions>
+                    <ModifyPartitions>
+                        <ModifyPartition>
+                            <Order>1</Order>
+                            <PartitionID>1</PartitionID>
+                            <Active>true</Active>
+                            <Format>NTFS</Format>
+                            <Label>System</Label>
+                        </ModifyPartition>
+                        <ModifyPartition>
+                            <Order>2</Order>
+                            <PartitionID>2</PartitionID>
+                            <Format>NTFS</Format>
+                            <Label>OS</Label>
+                        </ModifyPartition>
+                        <ModifyPartition>
+                            <Order>3</Order>
+                            <PartitionID>3</PartitionID>
+                            <Format>NTFS</Format>
+                            <Label>Data</Label>
+                        </ModifyPartition>
+                    </ModifyPartitions>
+                </Disk>
+            </DiskConfiguration>
+        </component> 
+        <component name="Microsoft-Windows-International-Core-WinPE" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" processorArchitecture="amd64">
+            <SetupUILanguage>
+                <WillShowUI>OnError</WillShowUI>
+                <UILanguage>en-GB</UILanguage>
+            </SetupUILanguage>
+            <UILanguage>en-GB</UILanguage>
+        </component>
+    </settings>
+    <settings pass="specialize">
+        <component name="Microsoft-Windows-UnattendedJoin" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" processorArchitecture="amd64">
+            <Identification>
+                <JoinDomain>%MACHINEOMAIN%</JoinDomain>
+                <UnsecureJoin>true</UnsecureJoin>
+            </Identification>
+        </component>
+        <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <InputLocale>en-GB</InputLocale>
+            <SystemLocale>en-GB</SystemLocale>
+            <UILanguage>en-GB</UILanguage>
+            <UserLocale>en-GB</UserLocale>
+        </component>
+        <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <ComputerName>%MACHINENAME%</ComputerName>
+        </component>
+    </settings>
+    <settings pass="oobeSystem">
+        <component name="Microsoft-Windows-Shell-Setup" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" processorArchitecture="amd64">
+            <TimeZone>%TIMEZONE%</TimeZone>
+            <OOBE>
+                <HideEULAPage>true</HideEULAPage> 
+                <NetworkLocation>Work</NetworkLocation> 
+                <ProtectYourPC>1</ProtectYourPC>
+                <SkipMachineOOBE>true</SkipMachineOOBE> 
+                <SkipUserOOBE>true</SkipUserOOBE> 
+            </OOBE>
+            <Display>
+                <ColorDepth>32</ColorDepth>
+                <DPI>96</DPI>
+                <HorizontalResolution>1024</HorizontalResolution>
+                <RefreshRate>60</RefreshRate>
+                <VerticalResolution>768</VerticalResolution>
+            </Display>
+        </component>
+    </settings>
+</unattend> 
