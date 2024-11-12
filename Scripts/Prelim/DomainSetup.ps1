@@ -33,20 +33,19 @@ $StaffGroup = "Staff"
 $InstallerGroup = "ADM_Task_Installers"
 $ITGroup = "IT"
 $ITAdminGroup = "IT_Admin"
-$UserPasswordDelegationOU = "OU=$StaffGroup,$EndPath"
 $UserPasswordDelegationGroup = "ADM_Task_Password_Admins"
 $SERAccessAdminGroup = "ADM_Task_SER_Access_Admins"
-$AdminAccountAdminGroup = "ADM_Task_Admin_Account_Admins"
-$AdminGroupAdminGroup = "ADM_Task_Admin_Group_Admins"
+$HiPrivAccountAdminGroup = "ADM_Task_HiPriv_Account_Admins"
+$HiPrivGroupAdminGroup = "ADM_Task_HiPriv_Group_Admins"
 $StandardAccountAdminGroup = "ADM_Task_Standard_Account_Admins"
 $StandardGroupAdminGroup = "ADM_Task_Standard_Group_Admins"
 $LocalAdminAdminGroup = "ADM_Task_Local_Admin_Admins"
 $ServiceAccountAdminGroup = "ADM_Task_Service_Account_Admins"
 $DNSOperatorsGroup = "ADM_Task_DNS_Operators"
 $DNSReadOnlyGroup = "ADM_Task_DNS_ReadOnly"
-$SharedGroupsOU = "OU=Shared_Mailbox_Access,OU=$GroupsOU,$EndPath"
-$EquipmentGroupsOU = "OU=Equipment_Mailbox_Access,OU=$GroupsOU,$EndPath"
-$RoomGroupsOU = "OU=Room_Mailbox_Access,OU=$GroupsOU,$EndPath"
+$SharedGroupsOU = "Shared_Mailbox_Access,OU=$GroupsOU"
+$EquipmentGroupsOU = "Equipment_Mailbox_Access,OU=$GroupsOU"
+$RoomGroupsOU = "Room_Mailbox_Access,OU=$GroupsOU"
 $SID500 = "Administrator"
 #====================================================================
 
@@ -156,6 +155,29 @@ function Link-GPO {
 #====================================================================
 
 #====================================================================
+#Delegate permission on computer objects to a group
+#====================================================================
+function Delegate-Computer-Join {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$AdminGroupName,
+        [Parameter(Mandatory)][string]$TargetOU
+    )
+    $AdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $AdminGroupName).SID
+    $Acl = Get-Acl "AD:\OU=$TargetOU,$EndPath"
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"CreateChild","Allow","All",$GuidMap["computer"]))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"DeleteChild","Allow","All",$GuidMap["computer"]))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["computer"]))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"WriteDacl","Allow","Descendents",$GuidMap["computer"]))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"Self","Allow",$ExtendedRightsMap["Validated write to DNS host name"],"Descendents",$GuidMap["computer"]))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"Self","Allow",$ExtendedRightsMap["Validated write to service principal name"],"Descendents",$GuidMap["computer"]))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ExtendedRightAccessRule $AdminGroupSID,"Allow",$ExtendedRightsMap["Reset Password"],"Descendents",$GuidMap["computer"]))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ExtendedRightAccessRule $AdminGroupSID,"Allow",$ExtendedRightsMap["Change Password"],"Descendents",$GuidMap["computer"]))
+    $Acl | Set-Acl
+}
+#====================================================================
+
+#====================================================================
 #Delegate permission on group objects to a group
 #====================================================================
 function Delegate-Group {
@@ -169,6 +191,40 @@ function Delegate-Group {
     $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"CreateChild","Allow","All",$GuidMap["group"]))
     $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"DeleteChild","Allow","All",$GuidMap["group"]))
     $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["group"]))
+    $Acl | Set-Acl
+}
+#====================================================================
+
+#====================================================================
+#Delegate modify membership permission on group objects to a group
+#====================================================================
+function Delegate-Group-Membership-Edit {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$AdminGroupName,
+        [Parameter(Mandatory)][string]$TargetOU
+    )
+    $AdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $AdminGroupName).SID
+    $Acl = Get-Acl "AD:\OU=$TargetOU,$EndPath"
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"WriteProperty","Allow",$GuidMap["member"],'Descendents',$GuidMap["group"]))
+    $Acl | Set-Acl
+}
+#====================================================================
+
+#====================================================================
+#Delegate change password permission on user objects to a group
+#====================================================================
+function Delegate-Password-Reset {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$AdminGroupName,
+        [Parameter(Mandatory)][string]$TargetOU
+    )
+    $AdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $AdminGroupName).SID
+    $Acl = Get-Acl "AD:\OU=$TargetOU,$EndPath"
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"ExtendedRight","Allow",$ExtendedRightsMap["Reset Password"],'Descendents',$GuidMap["user"]))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"WriteProperty","Allow",$GuidMap["pwdLastSet"],'Descendents',$GuidMap["user"]))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"WriteProperty","Allow",$GuidMap["lockoutTime"],'Descendents',$GuidMap["user"]))
     $Acl | Set-Acl
 }
 #====================================================================
@@ -288,9 +344,9 @@ Create-ADGroup -GroupName $StaffGroup -Path "OU=$GroupsOU,$EndPath" -GroupDescri
 Create-ADGroup -GroupName $ITGroup -Path "OU=$GroupsOU,$EndPath" -GroupDescription "Departmental group holding all IT accounts"
 Create-ADGroup -GroupName "License_Office365" -Path "OU=$GroupsOU,$EndPath" -GroupDescription "Used to assign Office365 licenses"
 Create-ADOU -OUName $ITGroup -Path $EndPath -OUDescription "Top level OU for IT User & Group objects"
-Create-ADOU -OUName "Shared_Mailbox_Access" -Path "OU=$GroupsOU,$EndPath" -OUDescription "IT OU for Group objects that grant access to shared mailboxes"
 Create-ADOU -OUName "Equipment_Mailbox_Access" -Path "OU=$GroupsOU,$EndPath" -OUDescription "IT OU for Group objects that grant access to equipment mailboxes"
 Create-ADOU -OUName "Room_Mailbox_Access" -Path "OU=$GroupsOU,$EndPath" -OUDescription "IT OU for Group objects that grant access to room mailboxes"
+Create-ADOU -OUName "Shared_Mailbox_Access" -Path "OU=$GroupsOU,$EndPath" -OUDescription "IT OU for Group objects that grant access to shared mailboxes"
 Create-ADOU -OUName "Equipment_Mailbox_Accounts" -Path "OU=$ITGroup,$EndPath" -OUDescription "IT OU for User objects that are equipment mailbox recipient types"
 Create-ADOU -OUName "Hi_Priv_Groups" -Path "OU=$ITGroup,$EndPath" -OUDescription "IT OU for Group objects that control Hi-Priv access"
 Create-ADOU -OUName "Hi_Priv_Accounts" -Path "OU=$ITGroup,$EndPath" -OUDescription "IT OU for User objects that are Hi-Priv accounts"
@@ -299,8 +355,6 @@ Create-ADOU -OUName "Room_Mailbox_Accounts" -Path "OU=$ITGroup,$EndPath" -OUDesc
 Create-ADOU -OUName "Shared_Mailbox_Accounts" -Path "OU=$ITGroup,$EndPath" -OUDescription "IT OU for User objects that are shared mailbox recipient types"
 Create-ADOU -OUName "Service_Accounts" -Path "OU=$ITGroup,$EndPath" -OUDescription "IT OU for User objects that are service accounts"
 Create-ADGroup -GroupName $ITAdminGroup -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Group holding all IT Admin accounts"
-Create-ADGroup -GroupName $AdminAccountAdminGroup -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members can create/delete/edit accounts in the Hi_Priv_Accounts OU"
-Create-ADGroup -GroupName $AdminGroupAdminGroup -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members can create/delete/edit groups in the Hi_Priv_Groups OU"
 Create-ADGroup -GroupName "ADM_Task_Desktop_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members are added to Local Admin on all computers in the Desktop, Laptop, & VM OUs"
 Create-ADGroup -GroupName "ADM_Task_DFS_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members have Full Control NTFS permissions on all DFS folders & have access to DFS console"
 Create-ADGroup -GroupName "ADM_Task_DHCP_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members are members of DHCP Administrators"
@@ -308,6 +362,8 @@ Create-ADGroup -GroupName "ADM_Task_DHCP_Users" -Path "OU=Hi_Priv_Groups,OU=$ITG
 Create-ADGroup -GroupName "ADM_Task_DNS_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members are indirect members of the DNSAdmins BuiltIn group"
 Create-ADGroup -GroupName $DNSOperatorsGroup -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members have Edit access to DNS zones"
 Create-ADGroup -GroupName $DNSReadOnlyGroup -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members have read only access to the DNS service"
+Create-ADGroup -GroupName $HiPrivAccountAdminGroup -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members can create/delete/edit accounts in the Hi_Priv_Accounts OU"
+Create-ADGroup -GroupName $HiPrivGroupAdminGroup -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members can create/delete/edit groups in the Hi_Priv_Groups OU"
 Create-ADGroup -GroupName $InstallerGroup -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members have permission to join & move computer objects in $ParentOU & Sub OUs"
 Create-ADGroup -GroupName $LocalAdminAdminGroup -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members can create/delete/edit groups in the Local_Admin_Groups OU"
 Create-ADGroup -GroupName $UserPasswordDelegationGroup -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members can reset passwords of users in the $StaffGroup OU"
@@ -329,14 +385,9 @@ Add-GroupMember -group "Remote Desktop Users" -Member "ADM_Task_Server_Admins"
 Add-GroupMember -group "Server Operators" -Member "ADM_Task_Server_Admins"
 Add-GroupMember -group "DnsAdmins" -Member "ADM_Task_DNS_Admins"
 Add-GroupMember -group $ITAdminGroup -Member $SID500
-Add-GroupMember -group $AdminAccountAdminGroup -Member "ADM_Role_Level_3_Admins"
-Add-GroupMember -group $AdminGroupAdminGroup -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group "ADM_Task_Desktop_Admins" -Member "ADM_Role_Level_1_Admins"
 Add-GroupMember -group "ADM_Task_Desktop_Admins" -Member "ADM_Role_Level_2_Admins"
 Add-GroupMember -group "ADM_Task_Desktop_Admins" -Member "ADM_Role_Level_3_Admins"
-Add-GroupMember -group $InstallerGroup -Member "ADM_Role_Level_1_Admins"
-Add-GroupMember -group $InstallerGroup -Member "ADM_Role_Level_2_Admins"
-Add-GroupMember -group $InstallerGroup -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group "ADM_Task_DHCP_Admins" -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group "ADM_Task_DHCP_Users" -Member "ADM_Role_Level_1_Admins"
 Add-GroupMember -group "ADM_Task_DHCP_Users" -Member "ADM_Role_Level_2_Admins"
@@ -344,6 +395,11 @@ Add-GroupMember -group "ADM_Task_DFS_Admins" -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group "ADM_Task_DNS_Admins" -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group $DNSReadOnlyGroup -Member "ADM_Role_Level_1_Admins"
 Add-GroupMember -group $DNSOperatorsGroup -Member "ADM_Role_Level_2_Admins"
+Add-GroupMember -group $HiPrivAccountAdminGroup -Member "ADM_Role_Level_3_Admins"
+Add-GroupMember -group $HiPrivGroupAdminGroup -Member "ADM_Role_Level_3_Admins"
+Add-GroupMember -group $InstallerGroup -Member "ADM_Role_Level_1_Admins"
+Add-GroupMember -group $InstallerGroup -Member "ADM_Role_Level_2_Admins"
+Add-GroupMember -group $InstallerGroup -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group $LocalAdminAdminGroup -Member "ADM_Role_Level_1_Admins"
 Add-GroupMember -group $LocalAdminAdminGroup -Member "ADM_Role_Level_2_Admins"
 Add-GroupMember -group $LocalAdminAdminGroup -Member "ADM_Role_Level_3_Admins"
@@ -363,11 +419,11 @@ Add-GroupMember -group $ServiceAccountAdminGroup -Member "ADM_Role_Level_2_Admin
 Add-GroupMember -group $ServiceAccountAdminGroup -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group "ADM_Task_Subscription_Contributors" -Member "ADM_Role_Level_2_Admins"
 Add-GroupMember -group "ADM_Task_Subscription_Contributors" -Member "ADM_Role_Level_3_Admins"
-Add-GroupMember -group "ADM_Task_WDS_Deploy_Servers" -Member "ADM_Role_Level_2_Admins"
-Add-GroupMember -group "ADM_Task_WDS_Deploy_Servers" -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group "ADM_Task_WDS_Deploy_Clients" -Member "ADM_Role_Level_1_Admins"
 Add-GroupMember -group "ADM_Task_WDS_Deploy_Clients" -Member "ADM_Role_Level_2_Admins"
 Add-GroupMember -group "ADM_Task_WDS_Deploy_Clients" -Member "ADM_Role_Level_3_Admins"
+Add-GroupMember -group "ADM_Task_WDS_Deploy_Servers" -Member "ADM_Role_Level_2_Admins"
+Add-GroupMember -group "ADM_Task_WDS_Deploy_Servers" -Member "ADM_Role_Level_3_Admins"
 Get-ADUser $SID500 | Move-ADObject -TargetPath "OU=Hi_Priv_Accounts,OU=$ITGroup,$EndPath"
 #====================================================================
 
@@ -389,28 +445,12 @@ $ExtendedMapParams = @{
     Properties = ("displayName", "rightsGuid")
 }
 Get-ADObject @ExtendedMapParams | ForEach-Object { $ExtendedRightsMap[$_.displayName] = [System.GUID]$_.rightsGuid }
-$UserPasswordDelegationGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $UserPasswordDelegationGroup).SID
-$ResetUserPasswordACE = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $UserPasswordDelegationGroupSID,"ExtendedRight","Allow",$ExtendedRightsMap["Reset Password"],'Descendents',$GuidMap["user"]
-$WriteForceChangeUserPasswordACE = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $UserPasswordDelegationGroupSID,"WriteProperty","Allow",$GuidMap["pwdLastSet"],'Descendents',$GuidMap["user"]
-$WriteUnlockUserAccountACE = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $UserPasswordDelegationGroupSID,"WriteProperty","Allow",$GuidMap["lockoutTime"],'Descendents',$GuidMap["user"]
-$Acl = Get-Acl "AD:\$UserPasswordDelegationOU"
-$Acl.AddAccessRule($ResetUserPasswordACE)
-$Acl.AddAccessRule($WriteForceChangeUserPasswordACE)
-$Acl.AddAccessRule($WriteUnlockUserAccountACE)
-$Acl | Set-Acl
-$SERAccessAdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $SERAccessAdminGroup).SID
-$WriteGroupMembershipACE = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $SERAccessAdminGroupSID,"WriteProperty","Allow",$GuidMap["member"],'Descendents',$GuidMap["group"]
-$Acl = Get-Acl "AD:\$SharedGroupsOU"
-$Acl.AddAccessRule($WriteGroupMembershipACE)
-$Acl | Set-Acl
-$Acl = Get-Acl "AD:\$EquipmentGroupsOU"
-$Acl.AddAccessRule($WriteGroupMembershipACE)
-$Acl | Set-Acl
-$Acl = Get-Acl "AD:\$RoomGroupsOU"
-$Acl.AddAccessRule($WriteGroupMembershipACE)
-$Acl | Set-Acl
-Delegate-User -AdminGroupName $AdminAccountAdminGroup -TargetOU "Hi_Priv_Accounts,OU=$ITGroup"
-Delegate-Group -AdminGroupName $AdminGroupAdminGroup -TargetOU "Hi_Priv_Groups,OU=$ITGroup"
+Delegate-Password-Reset -AdminGroupName $UserPasswordDelegationGroup -TargetOU $StaffGroup
+Delegate-Group-Membership-Edit -AdminGroupName $SERAccessAdminGroup -TargetOU $EquipmentGroupsOU
+Delegate-Group-Membership-Edit -AdminGroupName $SERAccessAdminGroup -TargetOU $RoomGroupsOU
+Delegate-Group-Membership-Edit -AdminGroupName $SERAccessAdminGroup -TargetOU $SharedGroupsOU
+Delegate-User -AdminGroupName $HiPrivAccountAdminGroup -TargetOU "Hi_Priv_Accounts,OU=$ITGroup"
+Delegate-Group -AdminGroupName $HiPrivGroupAdminGroup -TargetOU "Hi_Priv_Groups,OU=$ITGroup"
 Delegate-User -AdminGroupName $StandardAccountAdminGroup -TargetOU $StaffGroup
 Delegate-Group -AdminGroupName $StandardGroupAdminGroup -TargetOU $GroupsOU
 Delegate-User -AdminGroupName $ServiceAccountAdminGroup -TargetOU "Service_Accounts,OU=$ITGroup"
@@ -577,17 +617,7 @@ Create-ADOU -OUName "VMs" -Path $Location
 #Redirect default computer location
 #====================================================================
 redircmp "$Location"
-$InstallerGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup "$InstallerGroup").SID
-$Acl = Get-ACL "AD:\$Location"
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $InstallerGroupSID,"CreateChild","Allow","All",$GuidMap["computer"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $InstallerGroupSID,"DeleteChild","Allow","All",$GuidMap["computer"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $InstallerGroupSID,"WriteProperty","Allow","Descendents",$GuidMap["computer"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $InstallerGroupSID,"WriteDacl","Allow","Descendents",$GuidMap["computer"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $InstallerGroupSID,"Self","Allow",$ExtendedRightsMap["Validated write to DNS host name"],"Descendents",$GuidMap["computer"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $InstallerGroupSID,"Self","Allow",$ExtendedRightsMap["Validated write to service principal name"],"Descendents",$GuidMap["computer"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ExtendedRightAccessRule $InstallerGroupSID,"Allow",$ExtendedRightsMap["Reset Password"],"Descendents",$GuidMap["computer"]))
-$Acl.AddAccessRule((New-Object System.DirectoryServices.ExtendedRightAccessRule $InstallerGroupSID,"Allow",$ExtendedRightsMap["Change Password"],"Descendents",$GuidMap["computer"]))
-$Acl | Set-ACL
+Delegate-Computer-Join -AdminGroupName $InstallerGroup -TargetOU "$ParentOU"
 #====================================================================
 
 Write-Host "Creating GPOs"
