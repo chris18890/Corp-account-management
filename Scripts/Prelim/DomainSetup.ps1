@@ -317,6 +317,30 @@ function Delegate-DNSReadOnlyPermissions {
 #====================================================================
 
 #====================================================================
+#Delegate permissions to AD Sites, Subnets, and Transports admins
+#====================================================================
+function Delegate-ADObjectPermissions {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$AdminGroupName,
+        [Parameter(Mandatory)][string]$TargetDN
+    )
+    $AdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $AdminGroupName).SID
+    $AdminGroupSIDidentity = [System.Security.Principal.IdentityReference] $AdminGroupSID
+    $adRightsGA = [System.DirectoryServices.ActiveDirectoryRights] "GenericAll"
+    $adRightsCC = [System.DirectoryServices.ActiveDirectoryRights] "CreateChild"
+    $adRightsDC = [System.DirectoryServices.ActiveDirectoryRights] "DeleteChild"
+    $AccessControlTypeAllow = [System.Security.AccessControl.AccessControlType] "Allow"
+    $inheritanceType = [System.DirectoryServices.ActiveDirectorySecurityInheritance] "All"
+    $Acl = Get-Acl "AD:\$TargetDN,$EndPath"
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsGA,$AccessControlTypeAllow,$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsCC,$AccessControlTypeAllow,$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSIDidentity,$adRightsDC,$AccessControlTypeAllow,$inheritanceType))
+    $Acl | Set-Acl
+}
+#====================================================================
+
+#====================================================================
 #Add additional UPN suffix
 #====================================================================
 Get-ADForest | Set-ADForest -UPNSuffixes @{add="$EmailSuffix"}
@@ -355,6 +379,9 @@ Create-ADOU -OUName "Room_Mailbox_Accounts" -Path "OU=$ITGroup,$EndPath" -OUDesc
 Create-ADOU -OUName "Shared_Mailbox_Accounts" -Path "OU=$ITGroup,$EndPath" -OUDescription "IT OU for User objects that are shared mailbox recipient types"
 Create-ADOU -OUName "Service_Accounts" -Path "OU=$ITGroup,$EndPath" -OUDescription "IT OU for User objects that are service accounts"
 Create-ADGroup -GroupName $ITAdminGroup -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Group holding all IT Admin accounts"
+Create-ADGroup -GroupName "ADM_Task_ADSite_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members have Full Control over AD Site objects"
+Create-ADGroup -GroupName "ADM_Task_ADSubnet_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members have Full Control over AD Subnet objects"
+Create-ADGroup -GroupName "ADM_Task_ADTransport_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members have Full Control over AD Transport objects"
 Create-ADGroup -GroupName "ADM_Task_Desktop_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members are added to Local Admin on all computers in the Desktop, Laptop, & VM OUs"
 Create-ADGroup -GroupName "ADM_Task_DFS_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members have Full Control NTFS permissions on all DFS folders & have access to DFS console"
 Create-ADGroup -GroupName "ADM_Task_DHCP_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members are members of DHCP Administrators"
@@ -385,6 +412,9 @@ Add-GroupMember -group "Remote Desktop Users" -Member "ADM_Task_Server_Admins"
 Add-GroupMember -group "Server Operators" -Member "ADM_Task_Server_Admins"
 Add-GroupMember -group "DnsAdmins" -Member "ADM_Task_DNS_Admins"
 Add-GroupMember -group $ITAdminGroup -Member $SID500
+Add-GroupMember -group "ADM_Task_ADSite_Admins" -Member "ADM_Role_Level_3_Admins"
+Add-GroupMember -group "ADM_Task_ADSubnet_Admins" -Member "ADM_Role_Level_3_Admins"
+Add-GroupMember -group "ADM_Task_ADTransport_Admins" -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group "ADM_Task_Desktop_Admins" -Member "ADM_Role_Level_1_Admins"
 Add-GroupMember -group "ADM_Task_Desktop_Admins" -Member "ADM_Role_Level_2_Admins"
 Add-GroupMember -group "ADM_Task_Desktop_Admins" -Member "ADM_Role_Level_3_Admins"
@@ -459,6 +489,9 @@ Delegate-DNSOperatorsPermissions -AdminGroupName $DNSOperatorsGroup -TargetDN "C
 Delegate-DNSOperatorsPermissions -AdminGroupName $DNSOperatorsGroup -TargetDN "CN=MicrosoftDNS,DC=DomainDnsZones"
 Delegate-DNSReadOnlyPermissions -AdminGroupName $DNSReadOnlyGroup -TargetDN "CN=MicrosoftDNS,CN=System"
 Delegate-DNSReadOnlyPermissions -AdminGroupName $DNSReadOnlyGroup -TargetDN "CN=MicrosoftDNS,DC=DomainDnsZones"
+Delegate-ADObjectPermissions -AdminGroupName "ADM_Task_ADSite_Admins" -TargetDN "CN=Sites,CN=Configuration"
+Delegate-ADObjectPermissions -AdminGroupName "ADM_Task_ADSubnet_Admins" -TargetDN "CN=Subnets,CN=Sites,CN=Configuration"
+Delegate-ADObjectPermissions -AdminGroupName "ADM_Task_ADTransport_Admins" -TargetDN "CN=Inter-Site Transports,CN=Sites,CN=Configuration"
 $DNSZones = Get-ADObject -Filter * -SearchBase "CN=MicrosoftDNS,DC=DomainDnsZones,$EndPath" -SearchScope 1
 foreach ($DNSZone in $DNSZones) {
     $DNSZoneName = $DNSZone.Name
