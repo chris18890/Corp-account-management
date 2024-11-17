@@ -341,6 +341,31 @@ function Delegate-ADObjectPermissions {
 #====================================================================
 
 #====================================================================
+#Delegate permissions to GPO admins
+#====================================================================
+function Delegate-GPO-Permissions {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$AdminGroupName
+    )
+    $AdminGroupSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADGroup $AdminGroupName).SID
+    $AdminGroupSIDidentity = [System.Security.Principal.IdentityReference] $AdminGroupSID
+    $adRightsRP = [System.DirectoryServices.ActiveDirectoryRights] "ReadProperty"
+    $adRightsWP = [System.DirectoryServices.ActiveDirectoryRights] "WriteProperty"
+    $AccessControlTypeAllow = [System.Security.AccessControl.AccessControlType] "Allow"
+    $inheritanceType = [System.DirectoryServices.ActiveDirectorySecurityInheritance] "All"
+    $Acl = Get-Acl "AD:\$EndPath"
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,$adRightsRP,$AccessControlTypeAllow,$GuidMap["gPLink"],$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,$adRightsWP,$AccessControlTypeAllow,$GuidMap["gPLink"],$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,$adRightsRP,$AccessControlTypeAllow,$GuidMap["gPOptions"],$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,$adRightsWP,$AccessControlTypeAllow,$GuidMap["gPOptions"],$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"ExtendedRight",$AccessControlTypeAllow,$ExtendedRightsMap["Generate Resultant Set of Policy (Logging)"],$inheritanceType))
+    $Acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $AdminGroupSID,"ExtendedRight",$AccessControlTypeAllow,$ExtendedRightsMap["Generate Resultant Set of Policy (Planning)"],$inheritanceType))
+    $Acl | Set-Acl
+}
+#====================================================================
+
+#====================================================================
 #Add additional UPN suffix
 #====================================================================
 Get-ADForest | Set-ADForest -UPNSuffixes @{add="$EmailSuffix"}
@@ -379,6 +404,7 @@ Create-ADOU -OUName "Room_Mailbox_Accounts" -Path "OU=$ITGroup,$EndPath" -OUDesc
 Create-ADOU -OUName "Shared_Mailbox_Accounts" -Path "OU=$ITGroup,$EndPath" -OUDescription "IT OU for User objects that are shared mailbox recipient types"
 Create-ADOU -OUName "Service_Accounts" -Path "OU=$ITGroup,$EndPath" -OUDescription "IT OU for User objects that are service accounts"
 Create-ADGroup -GroupName $ITAdminGroup -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Group holding all IT Admin accounts"
+Create-ADGroup -GroupName "ADM_Task_ADGPO_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members can create and link GPOs"
 Create-ADGroup -GroupName "ADM_Task_ADSite_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members have Full Control over AD Site objects"
 Create-ADGroup -GroupName "ADM_Task_ADSubnet_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members have Full Control over AD Subnet objects"
 Create-ADGroup -GroupName "ADM_Task_ADTransport_Admins" -Path "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -GroupDescription "Members have Full Control over AD Transport objects"
@@ -412,6 +438,7 @@ Add-GroupMember -group "Remote Desktop Users" -Member "ADM_Task_Server_Admins"
 Add-GroupMember -group "Server Operators" -Member "ADM_Task_Server_Admins"
 Add-GroupMember -group "DnsAdmins" -Member "ADM_Task_DNS_Admins"
 Add-GroupMember -group $ITAdminGroup -Member $SID500
+Add-GroupMember -group "ADM_Task_ADGPO_Admins" -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group "ADM_Task_ADSite_Admins" -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group "ADM_Task_ADSubnet_Admins" -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group "ADM_Task_ADTransport_Admins" -Member "ADM_Role_Level_3_Admins"
@@ -492,6 +519,7 @@ Delegate-DNSReadOnlyPermissions -AdminGroupName $DNSReadOnlyGroup -TargetDN "CN=
 Delegate-ADObjectPermissions -AdminGroupName "ADM_Task_ADSite_Admins" -TargetDN "CN=Sites,CN=Configuration"
 Delegate-ADObjectPermissions -AdminGroupName "ADM_Task_ADSubnet_Admins" -TargetDN "CN=Subnets,CN=Sites,CN=Configuration"
 Delegate-ADObjectPermissions -AdminGroupName "ADM_Task_ADTransport_Admins" -TargetDN "CN=Inter-Site Transports,CN=Sites,CN=Configuration"
+Delegate-GPO-Permissions -AdminGroupName "ADM_Task_ADGPO_Admins"
 $DNSZones = Get-ADObject -Filter * -SearchBase "CN=MicrosoftDNS,DC=DomainDnsZones,$EndPath" -SearchScope 1
 foreach ($DNSZone in $DNSZones) {
     $DNSZoneName = $DNSZone.Name
@@ -698,4 +726,5 @@ Import-GPO -BackupGpoName "Deploy PuTTY" -TargetName "Deploy PuTTY" -path $GPOLo
 Link-GPO -GPOName "Deploy PuTTY" -GPOTarget "OU=Desktops,$Location"
 Link-GPO -GPOName "Deploy PuTTY" -GPOTarget "OU=Laptops,$Location"
 Link-GPO -GPOName "Deploy PuTTY" -GPOTarget "OU=VMs,$Location"
+Set-GPPermission -All -PermissionLevel GpoEditDeleteModifySecurity -TargetName "ADM_Task_ADGPO_Admins" -TargetType Group
 #====================================================================
