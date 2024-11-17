@@ -913,19 +913,19 @@ foreach ($USER in $LIST) {
         "S" {
             $DisplayName = $FirstName
             $LastName = "Shared"
-            $OUPath = "$SharedAccountsOU,OU=IT,$EndPath"
+            $OUPath = "$SharedAccountsOU,OU=Administration,$EndPath"
             $Enabled = $false
         }
         "E" {
             $DisplayName = $FirstName
             $LastName = "Equipment"
-            $OUPath = "$EquipmentAccountsOU,OU=IT,$EndPath"
+            $OUPath = "$EquipmentAccountsOU,OU=Administration,$EndPath"
             $Enabled = $false
         }
         "R" {
             $DisplayName = $FirstName
             $LastName = "Room"
-            $OUPath = "$RoomAccountsOU,OU=IT,$EndPath"
+            $OUPath = "$RoomAccountsOU,OU=Administration,$EndPath"
             $Enabled = $false
         }
         default {

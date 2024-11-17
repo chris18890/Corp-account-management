@@ -36,7 +36,7 @@ $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 # Set variables
 $ScriptTitle = "$Domain User Creation Script"
 $EnabledMailboxes = @() # Array to Store Completed Mailbox requests for later enumeration
-$OU = "IT"
+$OU = "Administration"
 $SubOU = "Hi_Priv_Accounts"
 $ITAdminGroup = "IT_Admin"
 $OUPath = "OU=$SubOU,OU=$OU,$EndPath"

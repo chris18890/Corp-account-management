@@ -7,7 +7,7 @@ switch ($UserType) {
         $OU = "Staff"
     }
     "H" {
-        $OU = "Hi_Priv_Accounts,OU=IT"
+        $OU = "Hi_Priv_Accounts,OU=Administration"
     }
 }
 $Domain = "$env:userdomain"

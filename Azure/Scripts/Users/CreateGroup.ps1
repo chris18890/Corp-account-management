@@ -221,7 +221,7 @@ switch ($UserType) {
     }
     "H" {
         $OU = "Hi_Priv_Groups"
-        $OUPath = "OU=$OU,OU=IT,$EndPath"
+        $OUPath = "OU=$OU,OU=Administration,$EndPath"
         Create-ADGroup -GroupName "$Membership" -Path $OUPath -GroupDescription "$Description"
     }
 }

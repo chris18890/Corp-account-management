@@ -119,14 +119,14 @@ $StaffGroup = "Staff"
 $ITGroup = "IT"
 $ITAdminGroup = "IT_Admin"
 $Groups = @($StaffGroup, $ITGroup, "License_Office365")
-$AdminGroups = (Get-ADGroup -Filter * -searchbase "OU=Hi_Priv_Groups,OU=$ITGroup,$EndPath" -Properties *).Name
+$AdminGroups = (Get-ADGroup -Filter * -searchbase "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -Properties *).Name
 $ExServer = "$Domain-Exch.$DNSSuffix" #Remote Exchange PS session
 $DCHostName = (Get-ADDomainController).HostName # Use this DC for all create/update operations, otherwise aspects may fail due to replication/timing issues
 Add-GroupMember -Group "Organization Management" -Member "Domain Admins"
 Add-GroupMember -Group "Organization Management" -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -Group "Server Management" -Member "ADM_Task_Server_Admins"
-Add-GroupMember -Group "Recipient Management" -Member "ADM_Task_Admin_Account_Admins"
-Add-GroupMember -Group "Recipient Management" -Member "ADM_Task_Admin_Group_Admins"
+Add-GroupMember -Group "Recipient Management" -Member "ADM_Task_HiPriv_Account_Admins"
+Add-GroupMember -Group "Recipient Management" -Member "ADM_Task_HiPriv_Group_Admins"
 Add-GroupMember -Group "Recipient Management" -Member "ADM_Task_Standard_Account_Admins"
 Add-GroupMember -Group "Recipient Management" -Member "ADM_Task_Standard_Group_Admins"
 Add-GroupMember -Group "Help Desk" -Member "ADM_Role_Level_1_Admins"
