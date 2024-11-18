@@ -35,6 +35,7 @@ $ITGroup = "IT"
 $ITAdminGroup = "IT_Admin"
 $UserPasswordDelegationGroup = "ADM_Task_Password_Admins"
 $SERAccessAdminGroup = "ADM_Task_SER_Access_Admins"
+$SERAccountAdminGroup = "ADM_Task_SER_Account_Admins"
 $HiPrivAccountAdminGroup = "ADM_Task_HiPriv_Account_Admins"
 $HiPrivGroupAdminGroup = "ADM_Task_HiPriv_Group_Admins"
 $StandardAccountAdminGroup = "ADM_Task_Standard_Account_Admins"
@@ -46,6 +47,9 @@ $DNSReadOnlyGroup = "ADM_Task_DNS_ReadOnly"
 $SharedGroupsOU = "Shared_Mailbox_Access,OU=$GroupsOU"
 $EquipmentGroupsOU = "Equipment_Mailbox_Access,OU=$GroupsOU"
 $RoomGroupsOU = "Room_Mailbox_Access,OU=$GroupsOU"
+$SharedAccountsOU = "Shared_Mailbox_Accounts,OU=Administration"
+$EquipmentAccountsOU = "Equipment_Mailbox_Accounts,OU=Administration"
+$RoomAccountsOU = "Room_Mailbox_Accounts,OU=Administration"
 $SID500 = "Administrator"
 #====================================================================
 
@@ -422,6 +426,7 @@ Create-ADGroup -GroupName $LocalAdminAdminGroup -Path "OU=Hi_Priv_Groups,OU=Admi
 Create-ADGroup -GroupName $UserPasswordDelegationGroup -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Members can reset passwords of users in the $StaffGroup OU"
 Create-ADGroup -GroupName "ADM_Task_Server_Admins" -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Members are added to Local admin on all computers in $ParentOU & Sub OUs via GPO, are indirect members of the Server Operators BuiltIn group"
 Create-ADGroup -GroupName $SERAccessAdminGroup -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Members can edit the membership of sh_, eq_, & ro_ groups"
+Create-ADGroup -GroupName $SERAccountAdminGroup -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Members can create/delete/edit sh_, eq_, & ro_ accounts"
 Create-ADGroup -GroupName $ServiceAccountAdminGroup -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Members can create/delete/edit accounts in the Service_Accounts OU"
 Create-ADGroup -GroupName $StandardAccountAdminGroup -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Members can create/delete/edit accounts in the $StaffGroup OU"
 Create-ADGroup -GroupName $StandardGroupAdminGroup -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Members can create/delete/edit groups in the $GroupsOU OU"
@@ -468,6 +473,8 @@ Add-GroupMember -group "ADM_Task_Server_Admins" -Member "ADM_Role_Level_3_Admins
 Add-GroupMember -group $SERAccessAdminGroup -Member "ADM_Role_Level_1_Admins"
 Add-GroupMember -group $SERAccessAdminGroup -Member "ADM_Role_Level_2_Admins"
 Add-GroupMember -group $SERAccessAdminGroup -Member "ADM_Role_Level_3_Admins"
+Add-GroupMember -group $SERAccountAdminGroup -Member "ADM_Role_Level_2_Admins"
+Add-GroupMember -group $SERAccountAdminGroup -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group $StandardAccountAdminGroup -Member "ADM_Role_Level_2_Admins"
 Add-GroupMember -group $StandardAccountAdminGroup -Member "ADM_Role_Level_3_Admins"
 Add-GroupMember -group $StandardGroupAdminGroup -Member "ADM_Role_Level_2_Admins"
@@ -506,6 +513,9 @@ Delegate-Password-Reset -AdminGroupName $UserPasswordDelegationGroup -TargetOU $
 Delegate-Group-Membership-Edit -AdminGroupName $SERAccessAdminGroup -TargetOU $EquipmentGroupsOU
 Delegate-Group-Membership-Edit -AdminGroupName $SERAccessAdminGroup -TargetOU $RoomGroupsOU
 Delegate-Group-Membership-Edit -AdminGroupName $SERAccessAdminGroup -TargetOU $SharedGroupsOU
+Delegate-User -AdminGroupName $SERAccountAdminGroup -TargetOU $EquipmentAccountsOU
+Delegate-User -AdminGroupName $SERAccountAdminGroup -TargetOU $RoomAccountsOU
+Delegate-User -AdminGroupName $SERAccountAdminGroup -TargetOU $SharedAccountsOU
 Delegate-User -AdminGroupName $HiPrivAccountAdminGroup -TargetOU "Hi_Priv_Accounts,OU=Administration"
 Delegate-Group -AdminGroupName $HiPrivGroupAdminGroup -TargetOU "Hi_Priv_Groups,OU=Administration"
 Delegate-User -AdminGroupName $StandardAccountAdminGroup -TargetOU $StaffGroup
