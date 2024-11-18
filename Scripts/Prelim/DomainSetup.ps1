@@ -435,8 +435,8 @@ Create-ADGroup -GroupName "ADM_Task_Subscription_Owners" -Path "OU=Hi_Priv_Group
 Create-ADGroup -GroupName "ADM_Task_Subscription_User_Access_Admins" -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Members have User Access Admin permissions on the subscription"
 Create-ADGroup -GroupName "ADM_Task_WDS_Deploy_Clients" -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Members can use WDS to deploy images in the Clients folder"
 Create-ADGroup -GroupName "ADM_Task_WDS_Deploy_Servers" -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Members can use WDS to deploy images in the Servers folder"
-Create-ADGroup -GroupName "ADM_Role_Level_1_Admins" -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Level 1 admins - desktop, includes all level 2 admins"
-Create-ADGroup -GroupName "ADM_Role_Level_2_Admins" -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Level 2 admins - junior server, includes all level 3 admins"
+Create-ADGroup -GroupName "ADM_Role_Level_1_Admins" -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Level 1 admins - desktop"
+Create-ADGroup -GroupName "ADM_Role_Level_2_Admins" -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Level 2 admins - junior server"
 Create-ADGroup -GroupName "ADM_Role_Level_3_Admins" -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Level 3 admins - senior server"
 Add-GroupMember -group $StaffGroup -Member $ITGroup
 Add-GroupMember -group "Remote Desktop Users" -Member "ADM_Task_Server_Admins"
