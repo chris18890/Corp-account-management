@@ -17,7 +17,7 @@ b - one to be a DC/file server
 3 - when running the setup scripts the -Domain param is the NetBIOS name of the domain only, and the 
     -DomainSuffix param is the external domain. EG if you supply -Domain "Corp" and -DomainSuffix 
     "company.com" your AD domain will be called "corp.company.com". Ideally make the -EmailSuffix 
-    the same as -DomainSuffix to give your users sensible email address and UPN values, EG 
+    the same as -DomainSuffix to give your users a sensible email address and UPN values, EG 
     username@company.com for the UPN and FirstName.LastName@company.com for the email address.
     Users can be added by modifying the \Scripts\Users\Users.CSV file.
 
@@ -49,7 +49,7 @@ To Run:
     
 9 - Optional - once DC has been patched with latest updates (post April 2023), run \Scripts\Prelim\LAPS.ps1
 
-9 - Optional - on the router VM run \Scripts\WDS\wds.ps1, then mount ISOs for Server 
+10 - Optional - on the router VM run \Scripts\WDS\wds.ps1, then mount ISOs for Server 
     2022 and Win10, and run the corresponding .PS1 script to set up the install 
     images. You can now create additional VMs that will do network installs. Machines 
     need to have a private network adaptor.
