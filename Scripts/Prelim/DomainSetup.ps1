@@ -706,6 +706,7 @@ Set-LapsADReadPasswordPermission -Identity "OU=Servers,$Location" -AllowedPrinci
 Set-LapsADResetPasswordPermission -Identity "OU=Servers,$Location" -AllowedPrincipals "$Domain\ADM_Task_Server_Admins"
 Set-LapsADReadPasswordPermission -Identity "OU=VMs,$Location" -AllowedPrincipals "$Domain\ADM_Task_Desktop_Admins"
 Set-LapsADResetPasswordPermission -Identity "OU=VMs,$Location" -AllowedPrincipals "$Domain\ADM_Task_Desktop_Admins"
+Remove-ADGroupMember -Identity "Schema Admins" -Members $SID500 -Confirm:$False
 #====================================================================
 
 Write-Host "Creating GPOs"
