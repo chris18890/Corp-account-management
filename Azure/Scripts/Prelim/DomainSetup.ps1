@@ -391,6 +391,7 @@ Write-Host "Creating user OUs & Groups"
 #====================================================================
 #Staff OU & group creation
 #====================================================================
+Set-ADOrganizationalUnit -Identity "OU=Domain Controllers,$EndPath" -ProtectedFromAccidentalDeletion $true
 Create-ADOU -OUName $StaffGroup -Path $EndPath -OUDescription "Top level OU for User objects"
 Create-ADOU -OUName $GroupsOU -Path $EndPath -OUDescription "Top level OU for Group objects"
 Create-ADGroup -GroupName $StaffGroup -Path "OU=$GroupsOU,$EndPath" -GroupDescription "Org-wide group for all users"
