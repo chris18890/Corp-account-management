@@ -693,6 +693,21 @@ redircmp "$Location"
 Delegate-Computer-Join -AdminGroupName $InstallerGroup -TargetOU "$ParentOU"
 #====================================================================
 
+#====================================================================
+#Set up LAPS
+#====================================================================
+Update-LapsADSchema -Confirm:$False
+Set-LapsADComputerSelfPermission -Identity "$Location"
+Set-LapsADReadPasswordPermission -Identity "OU=Desktops,$Location" -AllowedPrincipals "$Domain\ADM_Task_Desktop_Admins"
+Set-LapsADResetPasswordPermission -Identity "OU=Desktops,$Location" -AllowedPrincipals "$Domain\ADM_Task_Desktop_Admins"
+Set-LapsADReadPasswordPermission -Identity "OU=Laptops,$Location" -AllowedPrincipals "$Domain\ADM_Task_Desktop_Admins"
+Set-LapsADResetPasswordPermission -Identity "OU=Laptops,$Location" -AllowedPrincipals "$Domain\ADM_Task_Desktop_Admins"
+Set-LapsADReadPasswordPermission -Identity "OU=Servers,$Location" -AllowedPrincipals "$Domain\ADM_Task_Server_Admins"
+Set-LapsADResetPasswordPermission -Identity "OU=Servers,$Location" -AllowedPrincipals "$Domain\ADM_Task_Server_Admins"
+Set-LapsADReadPasswordPermission -Identity "OU=VMs,$Location" -AllowedPrincipals "$Domain\ADM_Task_Desktop_Admins"
+Set-LapsADResetPasswordPermission -Identity "OU=VMs,$Location" -AllowedPrincipals "$Domain\ADM_Task_Desktop_Admins"
+#====================================================================
+
 Write-Host "Creating GPOs"
 #====================================================================
 #Import GPOs
@@ -713,6 +728,8 @@ Import-GPO -BackupGpoName "TLS" -TargetName "TLS" -path $GPOLocation -CreateIfNe
 Link-GPO -GPOName "TLS" -GPOTarget "$EndPath"
 Import-GPO -BackupGpoName "ADM_Task_Server_Admins as members of Local admins" -TargetName "ADM_Task_Server_Admins as members of Local admins" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
 Link-GPO -GPOName "ADM_Task_Server_Admins as members of Local admins" -GPOTarget "$Location"
+Import-GPO -BackupGpoName "LAPS" -TargetName "LAPS" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
+Link-GPO -GPOName "LAPS" -GPOTarget "$Location"
 Import-GPO -BackupGpoName "ADM_Task_Desktop_Admins as members of Local admins" -TargetName "ADM_Task_Desktop_Admins as members of Local admins" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
 Link-GPO -GPOName "ADM_Task_Desktop_Admins as members of Local admins" -GPOTarget "OU=Desktops,$Location"
 Link-GPO -GPOName "ADM_Task_Desktop_Admins as members of Local admins" -GPOTarget "OU=Laptops,$Location"
