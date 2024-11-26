@@ -6,6 +6,7 @@ $ServerName = "$env:computername"
 $EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName
 $DNSSuffix = (Get-ADDomain -Identity $Domain).DNSRoot
 $ParentOU = "Domain Computers"
+$SID500 = "Administrator"
 $Location = "OU=$ParentOU,$EndPath"
 $Netmask = "255.255.255.0"
 $CDIR = "24"
@@ -120,6 +121,7 @@ if ((gwmi win32_computersystem).partofdomain -eq $false) {
         }
         Set-ADReplicationSiteLink -Identity "DEFAULTIPSITELINK" -Cost "10" -ReplicationFrequencyInMinutes "15"
         Move-ADDirectoryServer -Identity "$Domain-DC1" -Site $Site[0]
+        Remove-ADGroupMember -Identity "Enterprise Admins" -Members $SID500 -Confirm:$False
         Install-RemoteAccess -VpnType RoutingOnly -Legacy
         cmd.exe /c "netsh routing ip nat install"
         cmd.exe /c "netsh routing ip nat add interface $ExternalInterface"
