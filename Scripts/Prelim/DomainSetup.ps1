@@ -490,6 +490,7 @@ Add-GroupMember -group "ADM_Task_WDS_Deploy_Clients" -Member "ADM_Role_Level_3_A
 Add-GroupMember -group "ADM_Task_WDS_Deploy_Servers" -Member "ADM_Role_Level_2_Admins"
 Add-GroupMember -group "ADM_Task_WDS_Deploy_Servers" -Member "ADM_Role_Level_3_Admins"
 Get-ADUser $SID500 | Move-ADObject -TargetPath "OU=Hi_Priv_Accounts,OU=Administration,$EndPath"
+Set-ADAccountControl -Identity $SID500 -AccountNotDelegated $True
 #====================================================================
 
 Write-Host "Creating Permission delegations"
