@@ -727,6 +727,24 @@ Import-GPO -BackupGpoName "Logon Policy" -TargetName "Logon Policy" -path $GPOLo
 Link-GPO -GPOName "Logon Policy" -GPOTarget "$EndPath"
 Import-GPO -BackupGpoName "TLS" -TargetName "TLS" -path $GPOLocation -CreateIfNeeded
 Link-GPO -GPOName "TLS" -GPOTarget "$EndPath"
+Import-GPO -BackupGpoName "CWDIllegalInDllSearch" -TargetName "CWDIllegalInDllSearch" -path $GPOLocation -CreateIfNeeded
+Link-GPO -GPOName "CWDIllegalInDllSearch" -GPOTarget "$EndPath"
+Import-GPO -BackupGpoName "DisableNullSessionEnumeration" -TargetName "DisableNullSessionEnumeration" -path $GPOLocation -CreateIfNeeded
+Link-GPO -GPOName "DisableNullSessionEnumeration" -GPOTarget "$EndPath"
+Import-GPO -BackupGpoName "EnableSMBSigning" -TargetName "EnableSMBSigning" -path $GPOLocation -CreateIfNeeded
+Link-GPO -GPOName "EnableSMBSigning" -GPOTarget "$EndPath"
+Import-GPO -BackupGpoName "EnforceNLAandTLSforRDP" -TargetName "EnforceNLAandTLSforRDP" -path $GPOLocation -CreateIfNeeded
+Link-GPO -GPOName "EnforceNLAandTLSforRDP" -GPOTarget "$EndPath"
+Import-GPO -BackupGpoName "GroupPolicyHardening_MS150-011" -TargetName "GroupPolicyHardening_MS150-011" -path $GPOLocation -CreateIfNeeded
+Link-GPO -GPOName "GroupPolicyHardening_MS150-011" -GPOTarget "$EndPath"
+Import-GPO -BackupGpoName "Kerberos_Armouring" -TargetName "Kerberos_Armouring" -path $GPOLocation -CreateIfNeeded
+Link-GPO -GPOName "Kerberos_Armouring" -GPOTarget "$EndPath"
+Import-GPO -BackupGpoName "LSAProtection" -TargetName "LSAProtection" -path $GPOLocation -CreateIfNeeded
+Link-GPO -GPOName "LSAProtection" -GPOTarget "$EndPath"
+Import-GPO -BackupGpoName "NTLMv2" -TargetName "NTLMv2" -path $GPOLocation -CreateIfNeeded
+Link-GPO -GPOName "NTLMv2" -GPOTarget "$EndPath"
+Import-GPO -BackupGpoName "DC_Disable_Print_Spooler" -TargetName "DC_Disable_Print_Spooler" -path $GPOLocation -CreateIfNeeded
+Link-GPO -GPOName "DC_Disable_Print_Spooler" -GPOTarget "ou=Domain Controllers,$EndPath"
 Import-GPO -BackupGpoName "ADM_Task_Server_Admins as members of Local admins" -TargetName "ADM_Task_Server_Admins as members of Local admins" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
 Link-GPO -GPOName "ADM_Task_Server_Admins as members of Local admins" -GPOTarget "$Location"
 Import-GPO -BackupGpoName "LAPS" -TargetName "LAPS" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
