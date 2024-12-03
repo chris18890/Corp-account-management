@@ -405,7 +405,7 @@ Create-ADOU -OUName "Equipment_Mailbox_Accounts" -Path "OU=Administration,$EndPa
 Create-ADOU -OUName "Hi_Priv_Groups" -Path "OU=Administration,$EndPath" -OUDescription "IT Admin OU for Group objects that control Hi-Priv access"
 Create-ADOU -OUName "Hi_Priv_Accounts" -Path "OU=Administration,$EndPath" -OUDescription "IT Admin OU for User objects that are Hi-Priv accounts"
 Create-ADOU -OUName "Local_Admin_Groups" -Path "OU=Administration,$EndPath" -OUDescription "IT Admin OU for Group objects that give local admin on individual devices"
-Create-ADOU -OUName "Room_Mailbox_Accounts" -Path "OU=Administration,$EndPath" -OUDescription "IT OAdmin OU for User objects that are room mailbox recipient types"
+Create-ADOU -OUName "Room_Mailbox_Accounts" -Path "OU=Administration,$EndPath" -OUDescription "IT Admin OU for User objects that are room mailbox recipient types"
 Create-ADOU -OUName "Shared_Mailbox_Accounts" -Path "OU=Administration,$EndPath" -OUDescription "IT Admin OU for User objects that are shared mailbox recipient types"
 Create-ADOU -OUName "Service_Accounts" -Path "OU=Administration,$EndPath" -OUDescription "IT Admin OU for User objects that are service accounts"
 Create-ADGroup -GroupName $ITAdminGroup -Path "OU=Hi_Priv_Groups,OU=Administration,$EndPath" -GroupDescription "Group holding all IT Admin accounts"
