@@ -35,8 +35,7 @@ To Run -
     8 - download the contents of 
         https://www.dropbox.com/sh/n76ntsil0zjaapn/AAAEp7KrtLvLZk9_EFaExJIza?dl=0 
         and put it in \\<Domain>\Share\Software
-    9 - Optional - once DC has been patched with latest updates (post April 2023), run \Scripts\Prelim\LAPS.ps1
-    10 - Optional - on the router VM run \Scripts\WDS\wds.ps1, then mount ISOs for Server 
+    9 - Optional - on the router VM run \Scripts\WDS\wds.ps1, then mount ISOs for Server 
         2019 and Win10, and run the corresponding .PS1 script to set up the install 
         images. You can now create additional VMs that will do network installs. Machines 
         need to have a private network adaptor.

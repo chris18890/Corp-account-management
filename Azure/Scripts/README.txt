@@ -35,4 +35,3 @@ To Run -
     8 - download the contents of 
         https://www.dropbox.com/sh/n76ntsil0zjaapn/AAAEp7KrtLvLZk9_EFaExJIza?dl=0 
         and put it in \\<Domain>\Share\Software
-    9 - Optional - once DC has been patched with latest updates (post April 2023), run \Scripts\Prelim\LAPS.ps1
