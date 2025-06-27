@@ -597,9 +597,9 @@ if (!(TEST-PATH "\\$DNSSuffix\$ShareName")) {
         Write-Host "\\$ServerName\$ShareName already exists" -ForegroundColor Green
     }
     New-DfsnRoot -TargetPath "\\$ServerName\$ShareName" -Type DomainV2 -Path "\\$DNSSuffix\$ShareName" -GrantAdminAccounts "ADM_Task_DFS_Admins"
-    New-DfsReplicationGroup -GroupName "$ShareName" | New-DfsReplicatedFolder -FolderName "$ShareName" -DfsnPath "\\$DNSSuffix\$ShareName" | Add-DfsrMember -ComputerName "$ServerName"
-    Set-DfsrMembership -GroupName "$ShareName" -FolderName "$ShareName" -ContentPath "$Drive\$ShareName" -ComputerName "$ServerName" -PrimaryMember $True -StagingPathQuotaInMB 16384 -Force
-    Grant-DfsrDelegation -GroupName "$ShareName" -AccountName "ADM_Task_DFS_Admins" -Force
+    New-DfsReplicationGroup -GroupName $ShareName | New-DfsReplicatedFolder -FolderName $ShareName -DfsnPath "\\$DNSSuffix\$ShareName" | Add-DfsrMember -ComputerName $ServerName
+    Set-DfsrMembership -GroupName $ShareName -FolderName $ShareName -ContentPath "$Drive\$ShareName" -ComputerName $ServerName -PrimaryMember $True -StagingPathQuotaInMB 16384 -Force
+    Grant-DfsrDelegation -GroupName $ShareName -AccountName "ADM_Task_DFS_Admins" -Force
 } else {
     Write-Host "\\$DNSSuffix\$ShareName already exists" -ForegroundColor Green
 }
@@ -638,9 +638,9 @@ if (!(TEST-PATH "\\$DNSSuffix\$ShareName")) {
         Write-Host "\\$ServerName\$ShareName already exists" -ForegroundColor Green
     }
     New-DfsnRoot -TargetPath "\\$ServerName\$ShareName" -Type DomainV2 -Path "\\$DNSSuffix\$ShareName" -GrantAdminAccounts "ADM_Task_DFS_Admins"
-    New-DfsReplicationGroup -GroupName "$ShareName" | New-DfsReplicatedFolder -FolderName "$ShareName" -DfsnPath "\\$DNSSuffix\$ShareName" | Add-DfsrMember -ComputerName "$ServerName"
-    Set-DfsrMembership -GroupName "$ShareName" -FolderName "$ShareName" -ContentPath "$Drive\$ShareName" -ComputerName "$ServerName" -PrimaryMember $True -StagingPathQuotaInMB 16384 -Force
-    Grant-DfsrDelegation -GroupName "$ShareName" -AccountName "ADM_Task_DFS_Admins" -Force
+    New-DfsReplicationGroup -GroupName $ShareName | New-DfsReplicatedFolder -FolderName $ShareName -DfsnPath "\\$DNSSuffix\$ShareName" | Add-DfsrMember -ComputerName $ServerName
+    Set-DfsrMembership -GroupName $ShareName -FolderName $ShareName -ContentPath "$Drive\$ShareName" -ComputerName $ServerName -PrimaryMember $True -StagingPathQuotaInMB 16384 -Force
+    Grant-DfsrDelegation -GroupName $ShareName -AccountName "ADM_Task_DFS_Admins" -Force
 } else {
     Write-Host "\\$DNSSuffix\$ShareName already exists" -ForegroundColor Green
 }
@@ -745,7 +745,7 @@ $ExtendedMapParams = @{
     Properties = ("displayName", "rightsGuid")
 }
 Get-ADObject @ExtendedMapParams | ForEach-Object { $ExtendedRightsMap[$_.displayName] = [System.GUID]$_.rightsGuid }
-redircmp "$Location"
+redircmp $Location
 Delegate-Computer-Join -AdminGroupName $InstallerGroup -TargetOU $ParentOU
 Delegate-OU -AdminGroupName "ADM_Task_AD_Computer_OU_Admins" -TargetOU $ParentOU
 Delegate-Password-Reset -AdminGroupName $UserPasswordDelegationGroup -TargetOU $StaffGroup
@@ -809,7 +809,7 @@ Remove-ADGroupMember -Identity "Schema Admins" -Members $SID500 -Confirm:$False
 #====================================================================
 Write-Host "Creating & linking GPOs"
 try {
-    Set-GPLink -Name "Default Domain Policy" -Target "$EndPath" -Enforced Yes -ErrorAction Stop
+    Set-GPLink -Name "Default Domain Policy" -Target $EndPath -Enforced Yes -ErrorAction Stop
 } catch {
     Write-Host "GPLink already exists" -ForegroundColor Green
 }
@@ -819,27 +819,27 @@ try {
     Write-Host "GPLink already exists" -ForegroundColor Green
 }
 Import-GPO -BackupGpoName "Logon Policy" -TargetName "Logon Policy" -path $GPOLocation -CreateIfNeeded
-Link-GPO -GPOName "Logon Policy" -GPOTarget "$EndPath"
+Link-GPO -GPOName "Logon Policy" -GPOTarget $EndPath
 Import-GPO -BackupGpoName "TLS" -TargetName "TLS" -path $GPOLocation -CreateIfNeeded
-Link-GPO -GPOName "TLS" -GPOTarget "$EndPath"
+Link-GPO -GPOName "TLS" -GPOTarget $EndPath
 Import-GPO -BackupGpoName "CWDIllegalInDllSearch" -TargetName "CWDIllegalInDllSearch" -path $GPOLocation -CreateIfNeeded
-Link-GPO -GPOName "CWDIllegalInDllSearch" -GPOTarget "$EndPath"
+Link-GPO -GPOName "CWDIllegalInDllSearch" -GPOTarget $EndPath
 Import-GPO -BackupGpoName "DisableNullSessionEnumeration" -TargetName "DisableNullSessionEnumeration" -path $GPOLocation -CreateIfNeeded
-Link-GPO -GPOName "DisableNullSessionEnumeration" -GPOTarget "$EndPath"
+Link-GPO -GPOName "DisableNullSessionEnumeration" -GPOTarget $EndPath
 Import-GPO -BackupGpoName "EnableSMBSigning" -TargetName "EnableSMBSigning" -path $GPOLocation -CreateIfNeeded
-Link-GPO -GPOName "EnableSMBSigning" -GPOTarget "$EndPath"
+Link-GPO -GPOName "EnableSMBSigning" -GPOTarget $EndPath
 Import-GPO -BackupGpoName "EnforceNLAandTLSforRDP" -TargetName "EnforceNLAandTLSforRDP" -path $GPOLocation -CreateIfNeeded
-Link-GPO -GPOName "EnforceNLAandTLSforRDP" -GPOTarget "$EndPath"
+Link-GPO -GPOName "EnforceNLAandTLSforRDP" -GPOTarget $EndPath
 Import-GPO -BackupGpoName "GroupPolicyHardening_MS150-011" -TargetName "GroupPolicyHardening_MS150-011" -path $GPOLocation -CreateIfNeeded
-Link-GPO -GPOName "GroupPolicyHardening_MS150-011" -GPOTarget "$EndPath"
+Link-GPO -GPOName "GroupPolicyHardening_MS150-011" -GPOTarget $EndPath
 Import-GPO -BackupGpoName "Kerberos_Armouring" -TargetName "Kerberos_Armouring" -path $GPOLocation -CreateIfNeeded
-Link-GPO -GPOName "Kerberos_Armouring" -GPOTarget "$EndPath"
+Link-GPO -GPOName "Kerberos_Armouring" -GPOTarget $EndPath
 Import-GPO -BackupGpoName "LSAProtection" -TargetName "LSAProtection" -path $GPOLocation -CreateIfNeeded
-Link-GPO -GPOName "LSAProtection" -GPOTarget "$EndPath"
+Link-GPO -GPOName "LSAProtection" -GPOTarget $EndPath
 Import-GPO -BackupGpoName "NTLMv2" -TargetName "NTLMv2" -path $GPOLocation -CreateIfNeeded
-Link-GPO -GPOName "NTLMv2" -GPOTarget "$EndPath"
+Link-GPO -GPOName "NTLMv2" -GPOTarget $EndPath
 Import-GPO -BackupGpoName "LDAP_signing_requirements" -TargetName "LDAP_signing_requirements" -path $GPOLocation -CreateIfNeeded
-Link-GPO -GPOName "LDAP_signing_requirements" -GPOTarget "$EndPath"
+Link-GPO -GPOName "LDAP_signing_requirements" -GPOTarget $EndPath
 Import-GPO -BackupGpoName "DC_AppLocker_Disable_Browsers" -TargetName "DC_AppLocker_Disable_Browsers" -path $GPOLocation -CreateIfNeeded
 Link-GPO -GPOName "DC_AppLocker_Disable_Browsers" -GPOTarget "ou=Domain Controllers,$EndPath"
 Import-GPO -BackupGpoName "DC_Auditing" -TargetName "DC_Auditing" -path $GPOLocation -CreateIfNeeded
@@ -849,9 +849,9 @@ Link-GPO -GPOName "DC_Disable_Print_Spooler" -GPOTarget "ou=Domain Controllers,$
 Import-GPO -BackupGpoName "DC_LDAP_signing_requirements" -TargetName "DC_LDAP_signing_requirements" -path $GPOLocation -CreateIfNeeded
 Link-GPO -GPOName "DC_LDAP_signing_requirements" -GPOTarget "ou=Domain Controllers,$EndPath"
 Import-GPO -BackupGpoName "ADM_Task_Server_Admins as members of Local admins" -TargetName "ADM_Task_Server_Admins as members of Local admins" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
-Link-GPO -GPOName "ADM_Task_Server_Admins as members of Local admins" -GPOTarget "$Location"
+Link-GPO -GPOName "ADM_Task_Server_Admins as members of Local admins" -GPOTarget $Location
 Import-GPO -BackupGpoName "LAPS" -TargetName "LAPS" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
-Link-GPO -GPOName "LAPS" -GPOTarget "$Location"
+Link-GPO -GPOName "LAPS" -GPOTarget $Location
 Import-GPO -BackupGpoName "ADM_Task_Desktop_Admins as members of Local admins" -TargetName "ADM_Task_Desktop_Admins as members of Local admins" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
 Link-GPO -GPOName "ADM_Task_Desktop_Admins as members of Local admins" -GPOTarget "OU=Desktops,$Location"
 Link-GPO -GPOName "ADM_Task_Desktop_Admins as members of Local admins" -GPOTarget "OU=Laptops,$Location"
@@ -860,8 +860,8 @@ Import-GPO -BackupGpoName "IT Desktop Prefs" -TargetName "IT Desktop Prefs" -pat
 Link-GPO -GPOName "IT Desktop Prefs" -GPOTarget "OU=$StaffGroup,$EndPath"
 Link-GPO -GPOName "IT Desktop Prefs" -GPOTarget "OU=Hi_Priv_Accounts,OU=$AdministrationOU,$EndPath"
 Set-GPPermission -Name "IT Desktop Prefs" -PermissionLevel GpoRead -TargetName "Authenticated Users" -TargetType Group -Replace
-Set-GPPermission -Name "IT Desktop Prefs" -PermissionLevel GpoApply -TargetName "$ITGroup" -TargetType Group
-Set-GPPermission -Name "IT Desktop Prefs" -PermissionLevel GpoApply -TargetName "$ITAdminGroup" -TargetType Group
+Set-GPPermission -Name "IT Desktop Prefs" -PermissionLevel GpoApply -TargetName $ITGroup -TargetType Group
+Set-GPPermission -Name "IT Desktop Prefs" -PermissionLevel GpoApply -TargetName $ITAdminGroup -TargetType Group
 Import-GPO -BackupGpoName "CM visual help" -TargetName "CM visual help" -path $GPOLocation -CreateIfNeeded
 Link-GPO -GPOName "CM visual help" -GPOTarget "OU=$StaffGroup,$EndPath"
 Link-GPO -GPOName "CM visual help" -GPOTarget "OU=Hi_Priv_Accounts,OU=$AdministrationOU,$EndPath"
@@ -872,7 +872,7 @@ Link-GPO -GPOName "Deploy Firefox" -GPOTarget "OU=Desktops,$Location"
 Link-GPO -GPOName "Deploy Firefox" -GPOTarget "OU=Laptops,$Location"
 Link-GPO -GPOName "Deploy Firefox" -GPOTarget "OU=VMs,$Location"
 Import-GPO -BackupGpoName "Deploy Notepad++" -TargetName "Deploy Notepad++" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
-Link-GPO -GPOName "Deploy Notepad++" -GPOTarget "$Location"
+Link-GPO -GPOName "Deploy Notepad++" -GPOTarget $Location
 Import-GPO -BackupGpoName "Deploy PuTTY" -TargetName "Deploy PuTTY" -path $GPOLocation -MigrationTable "$GPOLocation\admins.migtable" -CreateIfNeeded
 Link-GPO -GPOName "Deploy PuTTY" -GPOTarget "OU=Desktops,$Location"
 Link-GPO -GPOName "Deploy PuTTY" -GPOTarget "OU=Laptops,$Location"
