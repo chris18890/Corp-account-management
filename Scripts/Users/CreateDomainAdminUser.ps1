@@ -473,6 +473,8 @@ function Send-UserEmail {
         } else {
             Write-Log "WARNING: Cannot send email to manager for $UserName, manager field incorrect..." -ForegroundColor Yellow
         }
+    } else {
+        Write-Log "WARNING: Cannot send email to manager for $UserName, manager field blank..." -ForegroundColor Yellow
     }
 }
 #====================================================================

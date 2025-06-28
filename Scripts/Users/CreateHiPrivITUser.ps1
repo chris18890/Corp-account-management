@@ -477,6 +477,8 @@ function Send-UserEmail {
         } else {
             Write-Log "WARNING: Cannot send email to manager for $UserName, manager field incorrect..." -ForegroundColor Yellow
         }
+    } else {
+        Write-Log "WARNING: Cannot send email to manager for $UserName, manager field blank..." -ForegroundColor Yellow
     }
 }
 #====================================================================
@@ -563,8 +565,10 @@ if (!$LastName) {
 if (!$UserName) {
     $UserName = READ-HOST 'Enter Username - '
     $UserName = $UserName.Trim() -replace '[^A-Za-z0-9.]', [String]::Empty # Strip out illegal characters from User ID
+    $UserNameAdmin = "admin." + $UserName
+} else {
+    $UserNameAdmin = "admin." + $UserName
 }
-$UserNameAdmin = "admin." + $UserName
 if ($UserNameAdmin.Length -gt 20) {
     $UserNameAdmin = $UserNameAdmin.Substring(0,20)
 }
