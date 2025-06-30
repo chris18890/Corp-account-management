@@ -449,22 +449,6 @@ foreach ($USER in $LIST) {
                     Enable-DistributionGroup -Identity $GroupName -DomainController $DCHostName
                     Set-DistributionGroup -Identity $GroupName -HiddenFromAddressListsEnabled $true -RequireSenderAuthenticationEnabled $true -DomainController $DCHostName
                 }
-                default {
-                    if ($Dept -eq "IT" -and $HiPriv -eq "Y") {
-                        $UserNameAdmin = "admin." + $UserName
-                        if ($UserNameAdmin.Length -gt 20) {
-                            $UserNameAdmin = $UserNameAdmin.Substring(0,20)
-                        }
-                        $enabledMailboxes += Create-Mailbox-OnPrem -UserName $UserNameAdmin -realname $RealName -SharedEquipmentRoom $SharedEquipmentRoom -Capacity $Capacity
-                        if ($PrivLevel -eq "3") {
-                            $UserNameDomainAdmin = "da." + $UserName
-                            if ($UserNameDomainAdmin.Length -gt 20) {
-                                $UserNameDomainAdmin = $UserNameDomainAdmin.Substring(0,20)
-                            }
-                            $enabledMailboxes += Create-Mailbox-OnPrem -UserName $UserNameDomainAdmin -realname $RealName -SharedEquipmentRoom $SharedEquipmentRoom -Capacity $Capacity
-                        }
-                    }
-                }
             }
             Write-Log ("=" * 80)
             Write-Log "Processing input file record for '$DisplayName' ($UserName) complete"

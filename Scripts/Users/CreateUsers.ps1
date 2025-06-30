@@ -1102,7 +1102,7 @@ foreach ($USER in $LIST) {
                         Add-GroupMember -Group "sh_ITHELP" -Member $UserName
                         Write-Log "Creating HiPriv account for $UserName"
                         Write-Log ""
-                        .\CreateHiPrivITUser.ps1 -FirstName $FirstName -LastName $LastName -UserName $UserName -UserPassword $UserPassword -EmailSuffix $EmailSuffix -PrivLevel $PrivLevel -Description $Description -Dept $Dept -Company $Company -LogFile $LogFile -O365 $O365 -O365EmailSuffix $O365EmailSuffix -DCHostName $DCHostName -Manager $Manager -Requester $Requester -SMTPServer $SMTPServer -EmailFrom $EmailFrom -PasswordLength $PasswordLength
+                        .\CreateHiPrivITUser.ps1 -FirstName $FirstName -LastName $LastName -UserName $UserName -UserPassword $UserPassword -EmailSuffix $EmailSuffix -PrivLevel $PrivLevel -Description $Description -Dept $Dept -Company $Company -LogFile $LogFile -O365 $O365 -DCHostName $DCHostName -Manager $Manager -Requester $Requester -SMTPServer $SMTPServer -EmailFrom $EmailFrom -PasswordLength $PasswordLength
                     }
                 }
             }
