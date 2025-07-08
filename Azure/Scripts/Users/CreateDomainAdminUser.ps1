@@ -323,6 +323,7 @@ if ($ExistingUser) {
             HomeDrive               = $HomeDrive
             ProfilePath             = $HomeDir
             Path                    = $OUPath
+            Manager                 = $Manager
             SamAccountName          = $UserNameDomainAdmin
             SurName                 = $LastName
             UserPrincipalName       = $UserPrincipalName
