@@ -3,7 +3,7 @@ param(
     [Parameter(Mandatory)][string]$O365
     , [Parameter(Mandatory)][string]$EmailSuffix
     , [string]$FirstName,[string]$LastName
-    , [string]$UserName,[string]$UserPassword,[string]$PasswordLength
+    , [string]$UserName,[string]$PasswordLength
     , [string]$Description
     , [string]$Dept,[string]$Company
     , [string]$LogFile,[string]$DCHostName
@@ -261,12 +261,10 @@ if (!$LogFile) {
     Write-Log "Errors and warnings will be displayed below. See the log file '$LogFile' for further details of these"
     Write-Log ("=" * 80)
     Write-Log ""
-    #Generate Password if one hasn't been passed as a param
-    if (!$UserPassword) {
-        $UserPassword = Create-Password -PasswordLength $PasswordLength
-        #Validate Password against Password Policy
-        Validate-Password -Password $UserPassword
-    }
+    #Generate random password
+    $UserPassword = Create-Password -PasswordLength $PasswordLength
+    #Validate Password against Password Policy
+    Validate-Password -Password $UserPassword
 }
 #====================================================================
 
@@ -342,7 +340,7 @@ if ($ExistingUser) {
         if ($PrivLevel -ge "3") {
             Write-Log "Creating Domain Admin account for $UserNameAdmin"
             Write-Log ""
-            .\CreateDomainAdminUser.ps1 -FirstName $FirstName -LastName $LastName -UserName $UserName -UserPassword $UserPassword -EmailSuffix $EmailSuffix -Description $Description -Dept $Dept -Company $Company -LogFile $LogFile -O365 $O365 -DCHostName $DCHostName -Manager $Manager -Requester $Requester -SMTPServer $SMTPServer -EmailFrom $EmailFrom -PasswordLength $PasswordLength
+            .\CreateDomainAdminUser.ps1 -FirstName $FirstName -LastName $LastName -UserName $UserName -EmailSuffix $EmailSuffix -Description $Description -Dept $Dept -Company $Company -LogFile $LogFile -O365 $O365 -DCHostName $DCHostName -Manager $Manager -Requester $Requester -SMTPServer $SMTPServer -EmailFrom $EmailFrom -PasswordLength $PasswordLength
         }
         if ($O365 -eq "E" -or $O365 -eq "H") {
             # Send email to requester and manager with new user's name & password
