@@ -10,61 +10,8 @@ Param(
     [string]$ComputerOU
 )
 
-#====================================================================
-# Set up logging
-#====================================================================
-function Write-Log {
-    param([string]$LogString,[string]$ForegroundColor)
-    #================================================================
-    # Purpose:          To write a string with a date and time stamp to a log file
-    # Assumptions:      $LogFile set with path to log file to write to
-    # Effects:
-    # Inputs:
-    # $LogString:       String to write to log file
-    # Calls:
-    # Returns:
-    # Notes:
-    #================================================================
-    "$(Get-Date -Format 'G') $LogString" | Out-File -Filepath $LogFile -Append -Encoding UTF8
-    if ($ForegroundColor) {
-        Write-Host $LogString -ForegroundColor $ForegroundColor
-    } else {
-        Write-Host $LogString
-    }
-}
-#====================================================================
-
-#====================================================================
-# Group creation function
-#====================================================================
-function New-DomainGroup {
-    [CmdletBinding()]
-    param(
-        [String]$GroupName,[String]$GroupScope,[ValidateSet("E","H","N")][String]$O365,[Boolean]$HiddenFromAddressListsEnabled,[String]$Path,[String]$GroupDescription
-    )
-    Write-Log "Creating Group $GroupName"
-    try {
-        New-ADGroup -GroupCategory $GroupCategory -GroupScope $GroupScope -Name $GroupName -Path $Path -SamAccountName $GroupName -Server $DCHostName -Description $GroupDescription
-        Set-ADObject -Identity "CN=$GroupName,$Path" -Server $DCHostName -ProtectedFromAccidentalDeletion $true
-        Write-Log "Created $GroupName"
-    } catch {
-        $ex = $_.Exception
-        if ($ex.Message -match "already exists") {
-            Write-Log "'$GroupName' already exists" -ForegroundColor Green
-        } else {
-            throw
-        }
-    }
-    if ($O365 -eq "E" -or $O365 -eq "H") {
-        try {
-            Enable-DistributionGroup -Identity $GroupName -DomainController $DCHostName
-            Set-DistributionGroup -Identity $GroupName -HiddenFromAddressListsEnabled $HiddenFromAddressListsEnabled -RequireSenderAuthenticationEnabled $true -DomainController $DCHostName
-        } catch {
-            Write-Log "WARNING: Could not enable $GroupName - $($_.Exception.Message)" -ForegroundColor Yellow
-        }
-    }
-}
-#====================================================================
+$ModulePath = (Split-Path $PSScriptRoot -Parent)
+. $ModulePath\helpers.ps1
 
 $Domain = "$env:userdomain"
 $EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName

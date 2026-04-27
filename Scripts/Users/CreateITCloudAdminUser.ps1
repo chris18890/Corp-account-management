@@ -13,61 +13,8 @@ param(
 
 Add-Type -Assembly System.Web
 
-#====================================================================
-# Set up logging
-#====================================================================
-function Write-Log {
-    param([string]$LogString,[string]$ForegroundColor)
-    #================================================================
-    # Purpose:          To write a string with a date and time stamp to a log file
-    # Assumptions:      $LogFile set with path to log file to write to
-    # Effects:
-    # Inputs:
-    # $LogString:       String to write to log file
-    # Calls:
-    # Returns:
-    # Notes:
-    #================================================================
-    "$(Get-Date -Format 'G') $LogString" | Out-File -Filepath $LogFile -Append -Encoding UTF8
-    if ($ForegroundColor) {
-        Write-Host $LogString -ForegroundColor $ForegroundColor
-    } else {
-        Write-Host $LogString
-    }
-}
-#====================================================================
-
-#====================================================================
-# Test password against password policy
-#====================================================================
-function Test-Password {
-    param([string]$Password)
-    #================================================================
-    # Purpose:          Test password against password policy
-    # Assumptions:      Password has been generated with enough characters for required groups
-    # Effects:          Password should be valid
-    # Inputs:           $Password
-    # Calls:            Write-Log function
-    # Returns:
-    # Notes:            There are 4 requirements in the current policy, but this could change in future
-    #================================================================
-    $TestsPassed = 0
-    if ($Password.length -ge ($PasswordLength)) {$TestsPassed ++} # Must be >= 15 characters in length
-    if ($Password -cmatch "[a-z]") {$TestsPassed ++} # Must contain a lowercase letter
-    if ($Password -cmatch "[A-Z]") {$TestsPassed ++} # Must contain an uppercase letter
-    if ($Password -cmatch "[0-9]") {$TestsPassed ++} # Must contain a digit
-    #if (-Not($Password -notmatch "[a-zA-Z0-9]")) {$TestsPassed ++} # Must contain a special character
-    if ($TestsPassed -ge 4) {
-        Write-Log "Password validated"
-        Write-Log ""
-    } else {
-        Write-Log ("-" * 80) -ForegroundColor Red
-        Write-Log "ERROR: Password does not comply with the password policy, script terminating" -ForegroundColor Red
-        Write-Log ("-" * 80) -ForegroundColor Red
-        return
-    }
-}
-#====================================================================
+$ModulePath = (Split-Path $PSScriptRoot -Parent)
+. $ModulePath\helpers.ps1
 
 #====================================================================
 # Domain Names in ADS & DNS format, and main OU name

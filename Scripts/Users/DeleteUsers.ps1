@@ -10,29 +10,8 @@ param(
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
 
-#====================================================================
-# Set up logging
-#====================================================================
-function Write-Log {
-    param([string]$LogString,[string]$ForegroundColor)
-    #================================================================
-    # Purpose:          To write a string with a date and time stamp to a log file
-    # Assumptions:      $LogFile set with path to log file to write to
-    # Effects:
-    # Inputs:
-    # $LogString:       String to write to log file
-    # Calls:
-    # Returns:
-    # Notes:
-    #================================================================
-    "$(Get-Date -Format 'G') $LogString" | Out-File -Filepath $LogFile -Append -Encoding UTF8
-    if ($ForegroundColor) {
-        Write-Host $LogString -ForegroundColor $ForegroundColor
-    } else {
-        Write-Host $LogString
-    }
-}
-#====================================================================
+$ModulePath = (Split-Path $PSScriptRoot -Parent)
+. $ModulePath\helpers.ps1
 
 # windows GUI components
 function Read-MultiLineInputBoxDialog([string]$Message, [string]$WindowTitle, [string]$DefaultText) {

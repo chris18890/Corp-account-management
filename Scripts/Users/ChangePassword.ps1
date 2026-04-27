@@ -9,6 +9,9 @@ param(
 
 Add-Type -AssemblyName "microsoft.visualbasic" -ErrorAction Stop
 
+$ModulePath = (Split-Path $PSScriptRoot -Parent)
+. $ModulePath\helpers.ps1
+
 $Domain = "$env:userdomain"
 $EndPath = (Get-ADDomain -Identity $Domain).DistinguishedName
 $DCHostName = (Get-ADDomain).PDCEmulator # Use this DC for all create/update operations, otherwise aspects may fail due to replication/timing issues
@@ -63,19 +66,15 @@ if ($User) {
     #only continue is there is text for the password
     if ($Password -match "^\w") {
         #Validate Password against Password Policy
-        #There are 4 requirements in current policy - this could change in future
-        $TestsPassed = 0        #Counter for number of tests passed by Password
-        if ($Password.length -ge $PasswordLength) {$TestsPassed ++} # Must be >= 20 chars
-        if ($Password -cmatch "[a-z]") {$TestsPassed ++} # Must contain at least one lowercase letter (a-z)
-        if ($Password -cmatch "[A-Z]") {$TestsPassed ++} # Must contain at least one uppercase letter (A-Z)
-        if ($Password -cmatch "[0-9]") {$TestsPassed ++} # Must contain at least one number (0-9)
-        if ($Password -match "[^a-zA-Z0-9]") {$TestsPassed ++} # Must contain a special character
-        if ($TestsPassed -ge 5) {
-            Write-Verbose "Password validated"
-        } else {
-            Write-Host "ERROR: Password does not comply with the password policy, script`nterminating" -ForegroundColor Red
-            Write-Host ("-" * 80) -ForegroundColor Red
-            exit
+        try {
+            Test-Password -Password $Password
+        } catch {
+            [microsoft.visualbasic.interaction]::Msgbox(
+                "Password does not meet policy requirements. Please try again.",
+                "OKOnly,Exclamation",
+                $ScriptTitle
+            ) | Out-Null
+            return
         }
         #convert to secure string
         $NewPassword = ConvertTo-SecureString -String $Password -AsPlainText -Force

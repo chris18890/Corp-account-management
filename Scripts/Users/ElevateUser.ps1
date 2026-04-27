@@ -11,81 +11,8 @@ param(
     [int]$TimeSpan
 )
 
-#====================================================================
-# Set up logging
-#====================================================================
-function Write-Log {
-    param([string]$LogString,[string]$ForegroundColor)
-    #================================================================
-    # Purpose:          To write a string with a date and time stamp to a log file
-    # Assumptions:      $LogFile set with path to log file to write to
-    # Effects:
-    # Inputs:
-    # $LogString:       String to write to log file
-    # Calls:
-    # Returns:
-    # Notes:
-    #================================================================
-    "$(Get-Date -Format 'G') $LogString" | Out-File -Filepath $LogFile -Append -Encoding UTF8
-    if ($ForegroundColor) {
-        Write-Host $LogString -ForegroundColor $ForegroundColor
-    } else {
-        Write-Host $LogString
-    }
-}
-#====================================================================
-
-#====================================================================
-# Group addition function
-#====================================================================
-function Add-GroupMember {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][string]$Group
-        , [Parameter(Mandatory)][string]$Member
-        , [int]$TimeSpan
-    )
-    #================================================================
-    # Purpose:          To add a user account or group to a group
-    # Assumptions:      Parameters have been set correctly
-    # Effects:          Member will be added to the group
-    # Inputs:           $Group - Group name as set before calling the function
-    #                   $Member - Object to be added
-    #                   $TimeSpan - number of minutes to add temporal memebership for
-    # Calls:            Write-Log function
-    # Returns:
-    # Notes:
-    #================================================================
-    $checkGroup = Get-ADGroup -LDAPFilter "(SAMAccountName=$Group)" -Server $DCHostName
-    if ($null -ne $checkGroup) {
-        $checkMember = Get-ADObject -LDAPFilter "(SAMAccountName=$Member)" -Server $DCHostName
-        if (-not $checkMember) {
-            Write-Log "'$Member' does not exist" -ForegroundColor Red
-            return
-        }
-        Write-Log "Adding $Member to $Group"
-        try {
-            if ($TimeSpan) {
-                Write-Log "Adding $Member to $Group for $TimeSpan minutes" -ForegroundColor Yellow
-                Add-ADGroupMember -Identity $Group -Members $Member -MemberTimeToLive (New-TimeSpan -Minutes $TimeSpan) -Server $DCHostName
-            } else {
-                Write-Log "Adding $Member to $Group with no time limit, manual removal required" -ForegroundColor Yellow
-                Add-ADGroupMember -Identity $Group -Members $Member -Server $DCHostName
-            }
-            Write-Log "Added $Member to $Group"
-        } catch {
-            $ex = $_.Exception
-            if ($ex.Message -match "already a member") {
-                Write-Log "'$Member' is already a member of group '$Group'" -ForegroundColor Green
-            } else {
-                throw
-            }
-        }
-    } else {
-        Write-Log "$Group does not exist" -ForegroundColor Red
-    }
-}
-#====================================================================
+$ModulePath = (Split-Path $PSScriptRoot -Parent)
+. $ModulePath\helpers.ps1
 
 $Domain = "$env:userdomain"
 $DCHostName = (Get-ADDomain).PDCEmulator # Use this DC for all create/update operations, otherwise aspects may fail due to replication/timing issues

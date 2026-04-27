@@ -81,29 +81,8 @@ $RoomGroupsOU = "Room_Mailbox_Access,OU=$GroupsOU"
 $SharedGroupsOU = "Shared_Mailbox_Access,OU=$GroupsOU"
 #====================================================================
 
-#====================================================================
-# Set up logging
-#====================================================================
-function Write-Log {
-    param([string]$LogString,[string]$ForegroundColor)
-    #================================================================
-    # Purpose:          To write a string with a date and time stamp to a log file
-    # Assumptions:      $LogFile set with path to log file to write to
-    # Effects:
-    # Inputs:
-    # $LogString:       String to write to log file
-    # Calls:
-    # Returns:
-    # Notes:
-    #================================================================
-    "$(Get-Date -Format 'G') $LogString" | Out-File -Filepath $LogFile -Append -Encoding UTF8
-    if ($ForegroundColor) {
-        Write-Host $LogString -ForegroundColor $ForegroundColor
-    } else {
-        Write-Host $LogString
-    }
-}
-#====================================================================
+$ModulePath = (Split-Path $PSScriptRoot -Parent)
+. $ModulePath\helpers.ps1
 
 #====================================================================
 # OU creation function
@@ -124,82 +103,6 @@ function New-ADOU {
         } else {
             throw
         }
-    }
-}
-#====================================================================
-
-#====================================================================
-# Group creation function
-#====================================================================
-function New-DomainGroup {
-    [CmdletBinding()]
-    param(
-        [String]$GroupName,[String]$GroupScope,[ValidateSet("E","H","N")][String]$O365,[Boolean]$HiddenFromAddressListsEnabled,[String]$Path,[String]$GroupDescription
-    )
-    Write-Log "Creating Group $GroupName"
-    try {
-        New-ADGroup -GroupCategory $GroupCategory -GroupScope $GroupScope -Name $GroupName -Path $Path -SamAccountName $GroupName -Server $DCHostName -Description $GroupDescription
-        Set-ADObject -Identity "CN=$GroupName,$Path" -Server $DCHostName -ProtectedFromAccidentalDeletion $true
-        Write-Log "Created $GroupName"
-    } catch {
-        $ex = $_.Exception
-        if ($ex.Message -match "already exists") {
-            Write-Log "'$GroupName' already exists" -ForegroundColor Green
-        } else {
-            throw
-        }
-    }
-    if ($O365 -eq "E" -or $O365 -eq "H") {
-        try {
-            Enable-DistributionGroup -Identity $GroupName -DomainController $DCHostName
-            Set-DistributionGroup -Identity $GroupName -HiddenFromAddressListsEnabled $HiddenFromAddressListsEnabled -RequireSenderAuthenticationEnabled $true -DomainController $DCHostName
-        } catch {
-            Write-Log "WARNING: Could not enable $GroupName - $($_.Exception.Message)" -ForegroundColor Yellow
-        }
-    }
-}
-#====================================================================
-
-#====================================================================
-# Group addition function
-#====================================================================
-function Add-GroupMember {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][string]$Group
-        , [Parameter(Mandatory)][string]$Member
-    )
-    #================================================================
-    # Purpose:          To add a user account or group to a group
-    # Assumptions:      Parameters have been set correctly
-    # Effects:          Member will be added to the group
-    # Inputs:           $Group - Group name as set before calling the function
-    #                   $Member - Object to be added
-    # Calls:            Write-Log function
-    # Returns:
-    # Notes:
-    #================================================================
-    $checkGroup = Get-ADGroup -LDAPFilter "(SAMAccountName=$Group)" -Server $DCHostName
-    if ($null -ne $checkGroup) {
-        $checkMember = Get-ADObject -LDAPFilter "(SAMAccountName=$Member)" -Server $DCHostName
-        if (-not $checkMember) {
-            Write-Log "'$Member' does not exist" -ForegroundColor Red
-            return
-        }
-        Write-Log "Adding $Member to $Group"
-        try {
-            Add-ADGroupMember -Identity $Group -Members $Member -Server $DCHostName
-            Write-Log "Added $Member to $Group"
-        } catch {
-            $ex = $_.Exception
-            if ($ex.Message -match "already a member") {
-                Write-Log "'$Member' is already a member of group '$Group'" -ForegroundColor Green
-            } else {
-                throw
-            }
-        }
-    } else {
-        Write-Log "$Group does not exist" -ForegroundColor Red
     }
 }
 #====================================================================
