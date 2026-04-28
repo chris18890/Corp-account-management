@@ -9,6 +9,7 @@ param(
     , [string]$FirstName,[string]$LastName,[string]$Description
     , [string]$Dept,[string]$Company,[string]$Manager
     , [string]$LogFile,[string]$DCHostName,[int]$PasswordLength
+    , [ValidateSet(2,3)][int]$PrivLevel
 )
 
 Add-Type -Assembly System.Web
@@ -81,7 +82,7 @@ if (-not $groups) {
 #====================================================================
 # Set user info
 #====================================================================
-$PrivGroup = "Domain Admins"
+$PrivGroup = "ADM_Role_Tier0_Level_" + $PrivLevel + "_Admins"
 if (!$FirstName) {
     $FirstName = READ-HOST 'Enter First Name - '
     $FirstName = $FirstName.Trim() -replace '[?@\\+]', [String]::Empty # Strip out illegal characters from First name for Office 365 compliance. Note that \ is escaped to \\
@@ -157,6 +158,9 @@ if ($ExistingUser) {
         Add-GroupMember -Group $ITAdminGroup -Member $UserNameDomainAdmin
         Add-GroupMember -Group $PrivGroup -Member $UserNameDomainAdmin
         Add-GroupMember -Group "Protected Users" -Member $UserNameDomainAdmin
+        if ($PrivLevel -ge 3) {
+            Add-GroupMember -Group "Domain Admins" -Member $UserNameDomainAdmin
+        }
         $null = New-Item -Path $HomeDir -ItemType Directory -Force -ErrorAction SilentlyContinue
         try {
             $Acl = Get-Acl $HomeDir

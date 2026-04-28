@@ -175,10 +175,10 @@ if ($ExistingUser) {
         } catch {
             Write-Log "WARNING: Could not set ACL on $HomeDir - $($_.Exception.Message)" -ForegroundColor Yellow
         }
-        if ($PrivLevel -ge 3) {
+        if ($PrivLevel -ge 2) {
             Write-Log "Creating Domain Admin account for $UserName"
             Write-Log ""
-            & $PSScriptRoot\CreateITDomainAdminUser.ps1 -FirstName $FirstName -LastName $LastName -UserName $UserName -EmailSuffix $EmailSuffix -Description $Description -Dept $Dept -Company $Company -LogFile $LogFile -DCHostName $DCHostName -Manager $Manager -PasswordLength $PasswordLength
+            & $PSScriptRoot\CreateITDomainAdminUser.ps1 -FirstName $FirstName -LastName $LastName -UserName $UserName -EmailSuffix $EmailSuffix -PrivLevel $PrivLevel -Description $Description -Dept $Dept -Company $Company -LogFile $LogFile -DCHostName $DCHostName -Manager $Manager -PasswordLength $PasswordLength
         }
         Write-Log ("=" * 80)
         Write-Log "Processing for '$DisplayName' ($UserNameAdmin) complete"
