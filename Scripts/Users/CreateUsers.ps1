@@ -700,20 +700,14 @@ if ($O365 -eq "H") {
                 $Dept = $USER.DEPT
                 $HiPriv = $USER.HIPRIV.ToUpper()
                 [int]$PrivLevel = $USER.PrivLevel
-                $SharedEquipmentRoom = $USER.'S/E/R'.ToUpper()
-                [int]$Capacity = $USER.Cap
                 $UserPrincipalName = "$UserName@$EmailSuffix"
                 Write-Log ""
                 Write-Log "Assigning region for $UserName"
                 Update-MgUser -UserId $UserPrincipalName -UsageLocation GB
-                switch ($SharedEquipmentRoom) {
-                    default {
-                        if ($Dept -eq "IT" -and $HiPriv -eq "Y") {
-                            Write-Log "Creating Cloud Admin account for $UserName"
-                            Write-Log ""
-                            & $PSScriptRoot\CreateITCloudAdminUser.ps1 -FirstName $FirstName -LastName $LastName -UserName $UserName -EmailSuffix $EmailSuffix -PrivLevel $PrivLevel -Dept $Dept -Company $Company -LogFile $LogFile -Manager $UserName -PasswordLength $PasswordLength
-                        }
-                    }
+                if ($Dept -eq "IT" -and $HiPriv -eq "Y") {
+                    Write-Log "Creating Cloud Admin account for $UserName"
+                    Write-Log ""
+                    & $PSScriptRoot\CreateITCloudAdminUser.ps1 -FirstName $FirstName -LastName $LastName -UserName $UserName -EmailSuffix $EmailSuffix -PrivLevel $PrivLevel -Dept $Dept -Company $Company -LogFile $LogFile -Manager $UserName -PasswordLength $PasswordLength
                 }
             } catch {
                 $e = $_.Exception
