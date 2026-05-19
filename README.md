@@ -33,6 +33,18 @@ b - one to be a DC/file server
 7 - The GPO backup directory is not included in this repository - either build your own under Scripts/Prelim/GPOs/ 
     or comment out the Import-GPO and Add-GPOLink calls in DomainSetup.ps1 and setup-wsus.ps1 for your environment. 
 
+Demo data note
+`Scripts/Users/users.csv` is shipped as a worked example with deliberately recognisable placeholder names. One row 
+(Dobby.House-Elf) has HIPRIV=Y and PrivLevel=1 so a reader can see the HiPriv account-creation mechanism end-to-end 
+without editing the file. Running CreateUsers.ps1 against this CSV unedited will create, on top of the bare user account:
+
+admin.Dobby.House-Elf - Tier-1 administrative account (workstation/server admin scope; no domain or Tier-0 reach).
+ca.Dobby.House-Elf (only if also running with -O365) - Entra ID cloud admin with the Level1 role set: Helpdesk Administrator, 
+Service Support Administrator, Global Reader. Notably not Authentication Administrator, not Domain Admin, not Global Admin.
+
+Before running against any real directory, edit the CSV to use your own user data and set HIPRIV=N on any row where you don't 
+want the admin accounts created. The full privilege ladder is defined in EntraRoles inside Scripts/environment.psd1 (Level1/2/3).
+
 To Run:
 
 1 - on the DC, run `\Scripts\Machine1\setup.ps1` with the `-Domain` parameter set to your NetBIOS domain, `-Platform` set 
