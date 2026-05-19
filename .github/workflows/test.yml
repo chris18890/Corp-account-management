@@ -1,0 +1,99 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  pester:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache PowerShell modules
+        uses: actions/cache@v4
+        with:
+          path: ~\Documents\PowerShell\Modules
+          key: psmodules-${{ runner.os }}-pester-5.5.0
+      - name: Install Pester
+        shell: pwsh
+        run: |
+            if (-not (Get-Module -ListAvailable Pester | Where-Object Version -ge '5.5.0')) {
+            Install-Module Pester -MinimumVersion 5.5.0 -Force -SkipPublisherCheck -Scope CurrentUser
+            }
+      - name: Install RSAT ActiveDirectory
+        shell: pwsh
+        run: |
+            Write-Host "Installing RSAT ActiveDirectory capability..."
+            $result = Install-WindowsFeature -Name "rsat-ad-powershell" -ErrorAction Stop
+            if ($result.Success -eq $false) {
+              throw "Failed to install ActiveDirectory tools: $($result | Out-String)"
+            }
+            Write-Host "Installation successful. Waiting for module to become available..."
+            Start-Sleep -Seconds 10
+            # Refresh the module path cache
+            [Environment]::SetEnvironmentVariable('PSModulePath', [Environment]::GetEnvironmentVariable('PSModulePath', 'Machine'), 'Process')
+            $maxRetries = 15
+            $retryCount = 0
+            $imported = $false
+            while ($retryCount -lt $maxRetries -and -not $imported) {
+              try {
+                Import-Module ActiveDirectory -ErrorAction Stop -Verbose
+                $imported = $true
+                Write-Host "ActiveDirectory module loaded successfully"
+              }
+              catch {
+                $retryCount++
+                Write-Host "Attempt $retryCount/$maxRetries failed: $($_.Exception.Message)"
+                if ($retryCount -lt $maxRetries) {
+                  Start-Sleep -Seconds 5
+                }
+              }
+            }
+            if (-not $imported) {
+              Write-Host "Module search paths:"
+              $env:PSModulePath -split ';' | ForEach-Object { Write-Host "  $_" }
+              Write-Host "Available modules:"
+              Get-Module -ListAvailable | Where-Object Name -like '*Active*' | Format-Table Name, Version, Path
+              throw "Failed to import ActiveDirectory module after $maxRetries attempts"
+            }
+      - name: Run Pester
+        shell: pwsh
+        working-directory: Scripts
+        run: |
+            .\Invoke-Pester.ps1
+            if (-not (Test-Path TestResults.xml)) {
+              Write-Error "TestResults.xml was not generated"
+              exit 1
+            }
+            Write-Host "TestResults.xml size: $(Get-Item TestResults.xml).Length bytes"
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Pester
+          path: Scripts/TestResults.xml
+          reporter: java-junit
+          fail-on-error: true
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pester-output
+          path: |
+            Scripts/TestResults.xml
+            Scripts/Coverage.xml
+  analyzer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: PSScriptAnalyzer
+        shell: pwsh
+        run: |
+            Install-Module PSScriptAnalyzer -Force -SkipPublisherCheck -Scope CurrentUser
+            $results = Invoke-ScriptAnalyzer -Path . -Recurse -Settings PSScriptAnalyzerSettings.psd1
+            $results | Format-Table -AutoSize
+            if ($results | Where-Object Severity -in 'Error','Warning') { exit 1 }
